@@ -28,8 +28,8 @@ namespace Selenium.Extensions
 
         Screenshot ITakesScreenshot.GetScreenshot()
         {
-            Response response = Execute(DriverCommand.Screenshot, null);
-            string base64 = response.Value.ToString();
+            var response = Execute(DriverCommand.Screenshot, null);
+            var base64 = response.Value.ToString();
             return new Screenshot(base64);
         }
     }

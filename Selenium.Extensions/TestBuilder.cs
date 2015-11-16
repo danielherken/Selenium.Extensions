@@ -17,6 +17,33 @@ namespace Selenium.Extensions
 {
     public class TestBuilder
     {
+        /// <summary>
+        /// Gets the current assembly directory.
+        /// </summary>
+        /// <value>
+        /// The assembly directory.
+        /// </value>
+        public static string AssemblyDirectory
+        {
+            get
+            {
+                var codeBase = Assembly.GetExecutingAssembly().CodeBase;
+                var uri = new UriBuilder(codeBase);
+                var path = Uri.UnescapeDataString(uri.Path);
+                return Path.GetDirectoryName(path);
+            }
+        }
+
+        /// <summary>
+        /// Gets the web driver for locally installed browsers.
+        /// </summary>
+        /// <param name="testUrl">The test URL.</param>
+        /// <param name="webDriver">The web driver.</param>
+        /// <param name="timeoutSeconds">The timeout seconds.</param>
+        /// <param name="deleteAllCookies">if set to <c>true</c> [delete all cookies].</param>
+        /// <param name="maximiseWindow">if set to <c>true</c> [maximise window].</param>
+        /// <returns></returns>
+        /// <exception cref="Selenium.Extensions.TestException">The details you specified are invalid</exception>
         public static IWebDriver GetInstalledWebDriver(string testUrl, WebDriver webDriver, int timeoutSeconds,
             bool deleteAllCookies = true, bool maximiseWindow = true)
         {
@@ -80,7 +107,7 @@ namespace Selenium.Extensions
                         ElementScrollBehavior = InternetExplorerElementScrollBehavior.Bottom,
                         InitialBrowserUrl = testUrl,
                         EnsureCleanSession = true,
-                        EnableNativeEvents = true,
+                        EnableNativeEvents = true
                     };
                     var driver = new InternetExplorerDriver(driverService, options, new TimeSpan(0, 0, timeoutSeconds));
                     if (deleteAllCookies)
@@ -152,6 +179,16 @@ namespace Selenium.Extensions
             throw new TestException("The details you specified are invalid");
         }
 
+        /// <summary>
+        /// Gets the web driver for standalone browsers.
+        /// </summary>
+        /// <param name="testUrl">The test URL.</param>
+        /// <param name="webDriver">The web driver.</param>
+        /// <param name="browserVersion">The browser version.</param>
+        /// <param name="timeoutSeconds">The timeout seconds.</param>
+        /// <param name="deleteAllCookies">if set to <c>true</c> , deletes all cookies before starting a test.</param>
+        /// <param name="maximiseWindow">if set to <c>true</c> , maximise the window.</param>
+        /// <returns></returns>
         public static IWebDriver GetStandaloneWebDriver(string testUrl, WebDriver webDriver, int browserVersion,
             int timeoutSeconds, bool deleteAllCookies = true, bool maximiseWindow = true)
         {
@@ -159,7 +196,7 @@ namespace Selenium.Extensions
             {
                 case WebDriver.ChromeDriver:
                 {
-                    string multiBrowserExe =
+                    var multiBrowserExe =
                         Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
                         "\\MultiBrowser\\MB_Chrome" + browserVersion + ".exe";
                     var driverService = ChromeDriverService.CreateDefaultService(AssemblyDirectory, "chromedriver.exe");
@@ -188,7 +225,7 @@ namespace Selenium.Extensions
                 }
                 case WebDriver.FirefoxDriver:
                 {
-                    string multiBrowserExe =
+                    var multiBrowserExe =
                         Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
                         "\\MultiBrowser\\MB_Chrome" + browserVersion + ".exe";
                     var driverService = FirefoxDriverService.CreateDefaultService();
@@ -223,7 +260,7 @@ namespace Selenium.Extensions
                         ElementScrollBehavior = InternetExplorerElementScrollBehavior.Bottom,
                         InitialBrowserUrl = testUrl,
                         EnsureCleanSession = true,
-                        EnableNativeEvents = true,
+                        EnableNativeEvents = true
                     };
                     var driver = new InternetExplorerDriver(driverService, options, new TimeSpan(0, 0, timeoutSeconds));
                     if (deleteAllCookies)
@@ -259,7 +296,7 @@ namespace Selenium.Extensions
                 }
                 case WebDriver.OperaDriver:
                 {
-                    string multiBrowserExe =
+                    var multiBrowserExe =
                         Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
                         "\\MultiBrowser\\MB_Chrome" + browserVersion + ".exe";
                     var driverService = OperaDriverService.CreateDefaultService();
@@ -282,7 +319,7 @@ namespace Selenium.Extensions
                 }
                 case WebDriver.SafariDriver:
                 {
-                    string multiBrowserExe =
+                    var multiBrowserExe =
                         Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
                         "\\MultiBrowser\\MB_Chrome" + browserVersion + ".exe";
                     var options = new SafariOptions
@@ -305,17 +342,25 @@ namespace Selenium.Extensions
             return null;
         }
 
+        /// <summary>
+        /// Gets the multi browser emulator web driver.
+        /// </summary>
+        /// <param name="testUrl">The test URL.</param>
+        /// <param name="emulator">The emulator.</param>
+        /// <param name="timeoutSeconds">The timeout seconds.</param>
+        /// <param name="deleteAllCookies">if set to <c>true</c> deletes all cookies.</param>
+        /// <returns></returns>
         public static IWebDriver GetMultiBrowserEmulatorWebDriver(string testUrl, Emulator emulator, int timeoutSeconds,
             bool deleteAllCookies = true)
         {
             var driverService = ChromeDriverService.CreateDefaultService(AssemblyDirectory, "chromedriver.exe");
-            RegistryKey currentInstallPath = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\MultiBrowser", false) ??
-                                             Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Wow6432node\MultiBrowser",
-                                                 false);
-            String installPathValue = null;
+            var currentInstallPath = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\MultiBrowser", false) ??
+                                     Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Wow6432node\MultiBrowser",
+                                         false);
+            string installPathValue = null;
             if (currentInstallPath != null)
             {
-                installPathValue = (String) currentInstallPath.GetValue("Path");
+                installPathValue = (string) currentInstallPath.GetValue("Path");
             }
             if (installPathValue != null)
             {
@@ -323,7 +368,6 @@ namespace Selenium.Extensions
                 {
                     installPathValue = installPathValue + "\\";
                 }
-
             }
             var options = new ChromeOptions
             {
@@ -340,11 +384,24 @@ namespace Selenium.Extensions
             return driver;
         }
 
+        /// <summary>
+        /// Gets the sauce labs web driver.
+        /// </summary>
+        /// <param name="testUrl">The test URL.</param>
+        /// <param name="hubUrl">The hub URL.</param>
+        /// <param name="sauceLabsUsername">The sauce labs username.</param>
+        /// <param name="sauceLabsAccessToken">The sauce labs access token.</param>
+        /// <param name="browserVendor">The browser vendor.</param>
+        /// <param name="cloudBrowserName">Name of the cloud browser.</param>
+        /// <param name="browserVersion">The browser version.</param>
+        /// <param name="takeScreenshots">if set to <c>true</c> support taking screenshots.</param>
+        /// <param name="timeoutSeconds">The timeout in seconds.</param>
+        /// <returns></returns>
         public static IWebDriver GetSauceLabsWebDriver(string testUrl, string hubUrl, string sauceLabsUsername,
             string sauceLabsAccessToken, CloudBrowserVendor browserVendor, CloudBrowserName cloudBrowserName,
             int browserVersion, bool takeScreenshots, int timeoutSeconds)
         {
-            DesiredCapabilities capabilities = new DesiredCapabilities();
+            var capabilities = new DesiredCapabilities();
             switch (browserVendor)
             {
                 case CloudBrowserVendor.iPad:
@@ -803,18 +860,5 @@ namespace Selenium.Extensions
             }
             return new ScreenshotRemoteWebDriver(new Uri(hubUrl), capabilities, new TimeSpan(0, 0, timeoutSeconds));
         }
-
-        public static string AssemblyDirectory
-        {
-            get
-            {
-                var codeBase = Assembly.GetExecutingAssembly().CodeBase;
-                var uri = new UriBuilder(codeBase);
-                var path = Uri.UnescapeDataString(uri.Path);
-                return Path.GetDirectoryName(path);
-            }
-        }
-
-
     }
 }

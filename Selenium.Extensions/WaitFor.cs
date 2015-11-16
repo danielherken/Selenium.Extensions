@@ -6,16 +6,27 @@ namespace Selenium.Extensions
 {
     public static class WaitFor
     {
-        public static void ElementPresent(IWebDriver browser, By locator)
+        /// <summary>
+        ///     Waits for the element to be present present with a specified time.
+        /// </summary>
+        /// <param name="browser">The browser.</param>
+        /// <param name="locator">The locator.</param>
+        /// <param name="timeSpan">The time span.</param>
+        public static void ElementPresent(IWebDriver browser, By locator, TimeSpan? timeSpan = null)
         {
-            Wait(browser, locator, TimeSpan.FromSeconds(10));
+            if (timeSpan == null)
+            {
+                timeSpan = TimeSpan.FromSeconds(10);
+            }
+            Wait(browser, locator, (TimeSpan) timeSpan);
         }
 
-        public static void ElementPresent(IWebDriver browser, By locator, TimeSpan timeSpan)
-        {
-            Wait(browser, locator, timeSpan);
-        }
-
+        /// <summary>
+        /// Waits the specified browser.
+        /// </summary>
+        /// <param name="browser">The browser.</param>
+        /// <param name="locator">The locator.</param>
+        /// <param name="timespan">The timespan.</param>
         private static void Wait(IWebDriver browser, By locator, TimeSpan timespan)
         {
             IWait<IWebDriver> wait = new WebDriverWait(browser, timespan);

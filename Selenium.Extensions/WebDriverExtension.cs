@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -42,25 +41,24 @@ namespace Selenium.Extensions
             return true;
         }
 
-        public static void WaitForPageToLoad(this IWebDriver driver, TimeSpan? timeout = null)
+        public static void WaitForPageToLoad(this IWebDriver driver, TimeSpan? timeSpan = null)
         {
-            if (timeout == null)
+            if (timeSpan == null)
             {
-                timeout = TimeSpan.FromSeconds(30);
+                timeSpan = TimeSpan.FromSeconds(30);
             }
-            WebDriverWait wait = new WebDriverWait(driver, (TimeSpan)timeout);
-
-            IJavaScriptExecutor javascript = driver as IJavaScriptExecutor;
+            var wait = new WebDriverWait(driver, (TimeSpan) timeSpan);
+            var javascript = driver as IJavaScriptExecutor;
             if (javascript == null)
             {
-                throw new ArgumentException("driver", "Driver must support javascript execution");
+                throw new ArgumentException("Driver must support javascript execution", nameof(driver));
             }
-            wait.Until((d) =>
+            wait.Until(d =>
             {
                 try
                 {
-                    string readyState = javascript.ExecuteScript(
-                    "if (document.readyState) return document.readyState;").ToString();
+                    var readyState = javascript.ExecuteScript(
+                        "if (document.readyState) return document.readyState;").ToString();
                     return readyState.ToLower() == "complete";
                 }
                 catch (InvalidOperationException e)
@@ -81,22 +79,22 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Waits until the element is displayed.
+        ///     Waits until the element is displayed.
         /// </summary>
         /// <param name="driver">The driver.</param>
         /// <param name="locator">The locator.</param>
         /// <param name="timeout">The timeout.</param>
-        public static void WaitUntiDisplayed(this IWebDriver driver,By locator, TimeSpan timeout)
+        public static void WaitUntiDisplayed(this IWebDriver driver, By locator, TimeSpan timeout)
         {
             new WebDriverWait(driver, timeout)
-               .Until(d => d.FindElement(locator).Enabled
-                   && d.FindElement(locator).Displayed
-                   && d.FindElement(locator).GetAttribute("aria-disabled") == null
-               );
+                .Until(d => d.FindElement(locator).Enabled
+                            && d.FindElement(locator).Displayed
+                            && d.FindElement(locator).GetAttribute("aria-disabled") == null
+                );
         }
 
         /// <summary>
-        /// Waits until the element is visible.
+        ///     Waits until the element is visible.
         /// </summary>
         /// <param name="driver">The driver.</param>
         /// <param name="locator">The locator.</param>
@@ -107,7 +105,7 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Scrolls down page.
+        ///     Scrolls down page.
         /// </summary>
         /// <param name="driver">The driver.</param>
         /// <exception cref="ArgumentException">Web driver must support javascript execution</exception>
@@ -118,208 +116,209 @@ namespace Selenium.Extensions
             {
                 throw new ArgumentException("Web driver must support javascript execution", nameof(javascript));
             }
-            javascript.ExecuteScript("var body = document.body, html  = document.documentElement; var height = Math.max(body.scrollHeight,body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight); window.scrollBy(0, height)");
+            javascript.ExecuteScript(
+                "var body = document.body, html  = document.documentElement; var height = Math.max(body.scrollHeight,body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight); window.scrollBy(0, height)");
         }
 
         public static List<IWebElement> GetElementsOfType(this IWebDriver driver, ElementType elementType)
         {
-            List<IWebElement> webElements = new List<IWebElement>();
+            var webElements = new List<IWebElement>();
             switch (elementType)
             {
                 case ElementType.Button:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("input"));
-                        webElements.AddRange(children.Where(child => child.GetAttribute("type") == "button"));
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("input"));
+                    webElements.AddRange(children.Where(child => child.GetAttribute("type") == "button"));
+                }
                     break;
                 case ElementType.CheckBox:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("input"));
-                        webElements.AddRange(children.Where(child => child.GetAttribute("type") == "checkbox"));
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("input"));
+                    webElements.AddRange(children.Where(child => child.GetAttribute("type") == "checkbox"));
+                }
                     break;
                 case ElementType.Div:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("div"));
-                        webElements.AddRange(children);
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("div"));
+                    webElements.AddRange(children);
+                }
                     break;
                 case ElementType.Img:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("img"));
-                        webElements.AddRange(children);
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("img"));
+                    webElements.AddRange(children);
+                }
                     break;
                 case ElementType.Label:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("label"));
-                        webElements.AddRange(children);
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("label"));
+                    webElements.AddRange(children);
+                }
                     break;
                 case ElementType.A:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("a"));
-                        webElements.AddRange(children);
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("a"));
+                    webElements.AddRange(children);
+                }
                     break;
                 case ElementType.Radio:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("radio"));
-                        webElements.AddRange(children.Where(child => child.GetAttribute("type") == "checkbox"));
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("radio"));
+                    webElements.AddRange(children.Where(child => child.GetAttribute("type") == "checkbox"));
+                }
                     break;
                 case ElementType.Select:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("select"));
-                        webElements.AddRange(children);
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("select"));
+                    webElements.AddRange(children);
+                }
                     break;
                 case ElementType.Span:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("span"));
-                        webElements.AddRange(children);
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("span"));
+                    webElements.AddRange(children);
+                }
                     break;
                 case ElementType.Tbody:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("tbody"));
-                        webElements.AddRange(children);
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("tbody"));
+                    webElements.AddRange(children);
+                }
                     break;
                 case ElementType.Td:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("td"));
-                        webElements.AddRange(children);
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("td"));
+                    webElements.AddRange(children);
+                }
                     break;
                 case ElementType.Thead:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("thead"));
-                        webElements.AddRange(children);
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("thead"));
+                    webElements.AddRange(children);
+                }
                     break;
                 case ElementType.Tr:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("tr"));
-                        webElements.AddRange(children);
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("tr"));
+                    webElements.AddRange(children);
+                }
                     break;
                 case ElementType.Table:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("table"));
-                        webElements.AddRange(children);
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("table"));
+                    webElements.AddRange(children);
+                }
                     break;
                 case ElementType.Text:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("input"));
-                        webElements.AddRange(children.Where(child => child.GetAttribute("type") == "text"));
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("input"));
+                    webElements.AddRange(children.Where(child => child.GetAttribute("type") == "text"));
+                }
                     break;
                 case ElementType.Password:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("input"));
-                        webElements.AddRange(children.Where(child => child.GetAttribute("type") == "password"));
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("input"));
+                    webElements.AddRange(children.Where(child => child.GetAttribute("type") == "password"));
+                }
                     break;
                 case ElementType.Submit:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("input"));
-                        webElements.AddRange(children.Where(child => child.GetAttribute("type") == "submit"));
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("input"));
+                    webElements.AddRange(children.Where(child => child.GetAttribute("type") == "submit"));
+                }
                     break;
                 case ElementType.DateTime:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("input"));
-                        webElements.AddRange(children.Where(child => child.GetAttribute("type") == "datetime"));
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("input"));
+                    webElements.AddRange(children.Where(child => child.GetAttribute("type") == "datetime"));
+                }
                     break;
                 case ElementType.DateTimeLocal:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("input"));
-                        webElements.AddRange(children.Where(child => child.GetAttribute("type") == "datetime-local"));
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("input"));
+                    webElements.AddRange(children.Where(child => child.GetAttribute("type") == "datetime-local"));
+                }
                     break;
                 case ElementType.Date:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("input"));
-                        webElements.AddRange(children.Where(child => child.GetAttribute("type") == "date"));
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("input"));
+                    webElements.AddRange(children.Where(child => child.GetAttribute("type") == "date"));
+                }
                     break;
                 case ElementType.Color:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("input"));
-                        webElements.AddRange(children.Where(child => child.GetAttribute("type") == "color"));
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("input"));
+                    webElements.AddRange(children.Where(child => child.GetAttribute("type") == "color"));
+                }
                     break;
                 case ElementType.Email:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("input"));
-                        webElements.AddRange(children.Where(child => child.GetAttribute("type") == "email"));
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("input"));
+                    webElements.AddRange(children.Where(child => child.GetAttribute("type") == "email"));
+                }
                     break;
                 case ElementType.Month:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("input"));
-                        webElements.AddRange(children.Where(child => child.GetAttribute("type") == "month"));
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("input"));
+                    webElements.AddRange(children.Where(child => child.GetAttribute("type") == "month"));
+                }
                     break;
                 case ElementType.Number:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("input"));
-                        webElements.AddRange(children.Where(child => child.GetAttribute("type") == "number"));
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("input"));
+                    webElements.AddRange(children.Where(child => child.GetAttribute("type") == "number"));
+                }
                     break;
                 case ElementType.Range:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("input"));
-                        webElements.AddRange(children.Where(child => child.GetAttribute("type") == "range"));
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("input"));
+                    webElements.AddRange(children.Where(child => child.GetAttribute("type") == "range"));
+                }
                     break;
                 case ElementType.Search:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("input"));
-                        webElements.AddRange(children.Where(child => child.GetAttribute("type") == "search"));
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("input"));
+                    webElements.AddRange(children.Where(child => child.GetAttribute("type") == "search"));
+                }
                     break;
                 case ElementType.Tel:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("input"));
-                        webElements.AddRange(children.Where(child => child.GetAttribute("type") == "tel"));
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("input"));
+                    webElements.AddRange(children.Where(child => child.GetAttribute("type") == "tel"));
+                }
                     break;
                 case ElementType.Time:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("input"));
-                        webElements.AddRange(children.Where(child => child.GetAttribute("type") == "time"));
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("input"));
+                    webElements.AddRange(children.Where(child => child.GetAttribute("type") == "time"));
+                }
                     break;
                 case ElementType.Url:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("input"));
-                        webElements.AddRange(children.Where(child => child.GetAttribute("type") == "url"));
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("input"));
+                    webElements.AddRange(children.Where(child => child.GetAttribute("type") == "url"));
+                }
                     break;
                 case ElementType.Week:
-                    {
-                        ReadOnlyCollection<IWebElement> children = driver.FindElements(By.TagName("input"));
-                        webElements.AddRange(children.Where(child => child.GetAttribute("type") == "week"));
-                    }
+                {
+                    var children = driver.FindElements(By.TagName("input"));
+                    webElements.AddRange(children.Where(child => child.GetAttribute("type") == "week"));
+                }
                     break;
             }
             return webElements;
         }
 
         /// <summary>
-        /// Waits until the element is visible.
+        ///     Waits until the element is visible.
         /// </summary>
         /// <param name="element">The element.</param>
         /// <param name="timespan">The timeout timespan.</param>
         public static void WaitUntilVisible(this IWebElement element, TimeSpan timespan)
         {
-            Stopwatch stopwatch = new Stopwatch();
+            var stopwatch = new Stopwatch();
             stopwatch.Start();
-            bool checking = false;
+            var checking = false;
             while (stopwatch.IsRunning && stopwatch.Elapsed < timespan)
             {
                 if (!checking)
@@ -342,7 +341,7 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Waits until the element exists.
+        ///     Waits until the element exists.
         /// </summary>
         /// <param name="driver">The driver.</param>
         /// <param name="locator">The locator.</param>
@@ -351,13 +350,13 @@ namespace Selenium.Extensions
         public static IWebElement WaitUntilExists(this IWebDriver driver, By locator, TimeSpan timespan)
         {
             IWebElement element = null;
-            Stopwatch stopwatch = new Stopwatch();
+            var stopwatch = new Stopwatch();
             stopwatch.Start();
-            bool checking = false;
+            var checking = false;
             while (stopwatch.IsRunning && stopwatch.Elapsed < timespan)
             {
                 if (checking) continue;
-                checking = true;   
+                checking = true;
                 try
                 {
                     element = driver.FindElement(locator);
@@ -383,7 +382,7 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Determines whether a alert is present.
+        ///     Determines whether a alert is present.
         /// </summary>
         /// <param name="driver">The driver.</param>
         /// <returns>true if a alert is present, otherwise false</returns>
@@ -399,7 +398,7 @@ namespace Selenium.Extensions
                 }
                 driver.SwitchTo().DefaultContent();
                 return false;
-            }   
+            }
             catch
             {
                 driver.SwitchTo().DefaultContent();
@@ -408,7 +407,7 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Selects the element by text.
+        ///     Selects the element by text.
         /// </summary>
         /// <param name="browser">The browser.</param>
         /// <param name="locator">The locator.</param>
@@ -422,7 +421,7 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Selects the elements by text.
+        ///     Selects the elements by text.
         /// </summary>
         /// <param name="browser">The browser.</param>
         /// <param name="locator">The locator.</param>
@@ -435,7 +434,7 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Waits for ajax to complete.
+        ///     Waits for ajax to complete.
         /// </summary>
         /// <param name="driver">The driver.</param>
         /// <exception cref="ArgumentException">Web driver must support javascript execution</exception>
@@ -449,7 +448,8 @@ namespace Selenium.Extensions
                 {
                     throw new ArgumentException("Web driver must support javascript execution", nameof(javascript));
                 }
-                var pageHasJQuery = (bool)javascript.ExecuteScript("if (!window.jQuery) { return false; } else { return true; }");
+                var pageHasJQuery =
+                    (bool) javascript.ExecuteScript("if (!window.jQuery) { return false; } else { return true; }");
                 if (pageHasJQuery)
                 {
                     ajaxIsComplete =
@@ -463,7 +463,7 @@ namespace Selenium.Extensions
                 }
                 else
                 {
-                    ajaxIsComplete = (bool)javascript.ExecuteScript("return document.readyState == 'complete'");
+                    ajaxIsComplete = (bool) javascript.ExecuteScript("return document.readyState == 'complete'");
                     if (ajaxIsComplete)
                     {
                         break;
@@ -475,7 +475,7 @@ namespace Selenium.Extensions
 
         public static IWebElement WaitElement(this IWebDriver driver, By locator)
         {
-            WaitForElement(driver, locator, new TimeSpan(0,0,30));
+            WaitForElement(driver, locator, new TimeSpan(0, 0, 30));
             return driver.FindElement(locator);
         }
 
@@ -546,32 +546,32 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Selects the element by attribute.
+        ///     Selects the element by attribute.
         /// </summary>
         /// <param name="driver">The driver.</param>
         /// <param name="locator">The locator.</param>
         /// <param name="attribute">The attribute.</param>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static IWebElement SelectElementByAttribute(this IWebDriver driver, By locator, string attribute, string value)
+        public static IWebElement SelectElementByAttribute(this IWebDriver driver, By locator, string attribute,
+            string value)
         {
             return driver.FindElements(locator).SingleOrDefault(d => d.GetAttribute(attribute) == value);
         }
 
         /// <summary>
-        /// Selects the elements by attribute.
+        ///     Selects the elements by attribute.
         /// </summary>
         /// <param name="driver">The driver.</param>
         /// <param name="locator">The locator.</param>
         /// <param name="attribute">The attribute.</param>
         /// <param name="value">The value.</param>
         /// <returns></returns>
-        public static IEnumerable<IWebElement> SelectElementsByAttribute(this IWebDriver driver, By locator, string attribute, string value)
+        public static IEnumerable<IWebElement> SelectElementsByAttribute(this IWebDriver driver, By locator,
+            string attribute, string value)
         {
             return driver.FindElements(locator)
                 .Where(d => d.GetAttribute(attribute) == value);
         }
-
-
     }
 }

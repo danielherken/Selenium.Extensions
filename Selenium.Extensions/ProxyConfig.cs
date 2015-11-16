@@ -10,9 +10,9 @@ namespace Selenium.Extensions
 
         public static InternetProxyInfo GetProxyInformation()
         {
-            int bufferLength = 0;
-            InternetQueryOption(IntPtr.Zero, InternetOptionProxy,IntPtr.Zero, ref bufferLength);
-            IntPtr buffer = IntPtr.Zero;
+            var bufferLength = 0;
+            InternetQueryOption(IntPtr.Zero, InternetOptionProxy, IntPtr.Zero, ref bufferLength);
+            var buffer = IntPtr.Zero;
             try
             {
                 buffer = Marshal.AllocHGlobal(bufferLength);
@@ -38,7 +38,8 @@ namespace Selenium.Extensions
         }
 
         [DllImport("wininet.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern bool InternetQueryOption(IntPtr hInternet, uint dwOption, IntPtr lpBuffer, ref int lpdwBufferLength);
+        private static extern bool InternetQueryOption(IntPtr hInternet, uint dwOption, IntPtr lpBuffer,
+            ref int lpdwBufferLength);
     }
 
     public enum InternetOpenType

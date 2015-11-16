@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Internal;
@@ -15,16 +13,16 @@ namespace Selenium.Extensions
     public static class ElementExtensions
     {
         /// <summary>
-        /// Gets the driver.
+        ///     Gets the driver.
         /// </summary>
         /// <param name="element">The element.</param>
         /// <returns></returns>
         public static IWebDriver GetDriver(this IWebElement element)
         {
-            IWrapsDriver wrappedElement = element as IWrapsDriver;
+            var wrappedElement = element as IWrapsDriver;
             if (wrappedElement == null)
             {
-                FieldInfo fieldInfo = element.GetType()
+                var fieldInfo = element.GetType()
                     .GetField("underlyingElement", BindingFlags.NonPublic | BindingFlags.Instance);
                 if (fieldInfo != null)
                 {
@@ -39,7 +37,7 @@ namespace Selenium.Extensions
 
 
         /// <summary>
-        /// Gets the javascript executor.
+        ///     Gets the javascript executor.
         /// </summary>
         /// <param name="element">The element.</param>
         /// <returns></returns>
@@ -56,7 +54,7 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Gets the type of the element attributes.
+        ///     Gets the type of the element attributes.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="element">The element.</param>
@@ -64,12 +62,12 @@ namespace Selenium.Extensions
         /// <returns></returns>
         public static T GetAttributeAsType<T>(this IWebElement element, string attributeName)
         {
-            string value = element.GetAttribute(attributeName) ?? string.Empty;
-            return (T)TypeDescriptor.GetConverter(typeof(T)).ConvertFromString(value);
+            var value = element.GetAttribute(attributeName) ?? string.Empty;
+            return (T) TypeDescriptor.GetConverter(typeof (T)).ConvertFromString(value);
         }
 
         /// <summary>
-        /// Focuses on the specified element.
+        ///     Focuses on the specified element.
         /// </summary>
         /// <param name="element">The element.</param>
         public static void Focus(this IWebElement element)
@@ -94,7 +92,7 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Blurs over specified element.
+        ///     Blurs over specified element.
         /// </summary>
         /// <param name="element">The element.</param>
         public static void Blur(this IWebElement element)
@@ -109,29 +107,29 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Hovers over specified element.
+        ///     Hovers over specified element.
         /// </summary>
         /// <param name="element">The element.</param>
         public static void Hover(this IWebElement element)
         {
             var driver = GetDriver(element);
-            Actions action = new Actions(driver);
+            var action = new Actions(driver);
             action.MoveToElement(element).Perform();
         }
 
         /// <summary>
-        /// Hovers over and then clicks the element.
+        ///     Hovers over and then clicks the element.
         /// </summary>
         /// <param name="element">The element.</param>
         public static void HoverAndClick(this IWebElement element)
         {
             var driver = GetDriver(element);
-            Actions action = new Actions(driver);
+            var action = new Actions(driver);
             action.MoveToElement(element).Click(element).Build().Perform();
         }
 
         /// <summary>
-        /// Determines if the element is displayed.
+        ///     Determines if the element is displayed.
         /// </summary>
         /// <param name="element">The element.</param>
         /// <returns>true if the element is displayed, otherwise false</returns>
@@ -148,7 +146,7 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Scrolls the element into view.
+        ///     Scrolls the element into view.
         /// </summary>
         /// <param name="element">The element.</param>
         public static void ScrollIntoView(this IWebElement element)
@@ -163,7 +161,7 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Gets the specified elements class attribute.
+        ///     Gets the specified elements class attribute.
         /// </summary>
         /// <param name="element">The element.</param>
         /// <returns>The class attribute value</returns>
@@ -180,7 +178,7 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Gets the specified elements name attribute.
+        ///     Gets the specified elements name attribute.
         /// </summary>
         /// <param name="element">The element.</param>
         /// <returns>The name attribute value</returns>
@@ -197,7 +195,7 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Gets the specified elements id attribute.
+        ///     Gets the specified elements id attribute.
         /// </summary>
         /// <param name="element">The element.</param>
         /// <returns>The id attribute value</returns>
@@ -214,13 +212,12 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Gets the specified elements style attribute.
+        ///     Gets the specified elements style attribute.
         /// </summary>
         /// <param name="element">The element.</param>
         /// <returns>The style attribute value</returns>
         public static string GetStyle(this IWebElement element)
         {
-
             try
             {
                 return element.GetAttribute("style");
@@ -232,13 +229,12 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Gets the specified elements value attribute.
+        ///     Gets the specified elements value attribute.
         /// </summary>
         /// <param name="element">The element.</param>
         /// <returns>The value attribute</returns>
         public static string GetValue(this IWebElement element)
         {
-
             try
             {
                 return element.GetAttribute("value");
@@ -250,13 +246,12 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Gets the specified elements type attribute.
+        ///     Gets the specified elements type attribute.
         /// </summary>
         /// <param name="element">The element.</param>
         /// <returns>The type attribute value</returns>
         public static string GetTypeValue(this IWebElement element)
         {
-
             try
             {
                 return element.GetAttribute("type");
@@ -268,7 +263,7 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Gets the specified elements title attribute.
+        ///     Gets the specified elements title attribute.
         /// </summary>
         /// <param name="element">The element.</param>
         /// <returns>The title attribute value</returns>
@@ -285,7 +280,7 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Gets the specified elements parent element.
+        ///     Gets the specified elements parent element.
         /// </summary>
         /// <param name="element">The element.</param>
         /// <returns>The parent element</returns>
@@ -295,7 +290,7 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Gets the specified elements child element.
+        ///     Gets the specified elements child element.
         /// </summary>
         /// <param name="element">The element.</param>
         /// <returns>The child element</returns>
@@ -305,7 +300,7 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Gets the preceding elements sibling.
+        ///     Gets the preceding elements sibling.
         /// </summary>
         /// <param name="element">The element.</param>
         /// <returns></returns>
@@ -315,7 +310,7 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Gets the following elements sibling.
+        ///     Gets the following elements sibling.
         /// </summary>
         /// <param name="element">The element.</param>
         /// <returns></returns>
@@ -329,284 +324,314 @@ namespace Selenium.Extensions
             switch (elementType)
             {
                 case ElementType.Button:
-                    {
-                        return element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "button");
-                    }
+                {
+                    return
+                        element.FindElements(By.TagName("input"))
+                            .FirstOrDefault(d => d.GetAttribute("type") == "button");
+                }
                 case ElementType.CheckBox:
-                    {
-                        return element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "checkbox");
-                    }
+                {
+                    return
+                        element.FindElements(By.TagName("input"))
+                            .FirstOrDefault(d => d.GetAttribute("type") == "checkbox");
+                }
                 case ElementType.Div:
-                    {
-                        return element.FindElements(By.TagName("div")).FirstOrDefault();
-                    }
+                {
+                    return element.FindElements(By.TagName("div")).FirstOrDefault();
+                }
                 case ElementType.Img:
-                    {
-                        return element.FindElements(By.TagName("img")).FirstOrDefault();
-                    }
+                {
+                    return element.FindElements(By.TagName("img")).FirstOrDefault();
+                }
                 case ElementType.Label:
-                    {
-                        return element.FindElements(By.TagName("label")).FirstOrDefault();
-                    }
+                {
+                    return element.FindElements(By.TagName("label")).FirstOrDefault();
+                }
                 case ElementType.A:
-                    {
-                        return element.FindElements(By.TagName("a")).FirstOrDefault();
-                    }
+                {
+                    return element.FindElements(By.TagName("a")).FirstOrDefault();
+                }
                 case ElementType.Radio:
-                    {
-                        return element.FindElements(By.TagName("radio")).FirstOrDefault(d => d.GetAttribute("type") == "checkbox");
-                    }
+                {
+                    return
+                        element.FindElements(By.TagName("radio"))
+                            .FirstOrDefault(d => d.GetAttribute("type") == "checkbox");
+                }
                 case ElementType.Select:
-                    {
-                        return element.FindElements(By.TagName("select")).FirstOrDefault();
-                    }
+                {
+                    return element.FindElements(By.TagName("select")).FirstOrDefault();
+                }
                 case ElementType.Span:
-                    {
-                        return element.FindElements(By.TagName("span")).FirstOrDefault();
-                    }
+                {
+                    return element.FindElements(By.TagName("span")).FirstOrDefault();
+                }
                 case ElementType.Tbody:
-                    {
-                        return element.FindElements(By.TagName("tbody")).FirstOrDefault();
-                    }
+                {
+                    return element.FindElements(By.TagName("tbody")).FirstOrDefault();
+                }
                 case ElementType.Td:
-                    {
-                        return element.FindElements(By.TagName("td")).FirstOrDefault();
-                    }
+                {
+                    return element.FindElements(By.TagName("td")).FirstOrDefault();
+                }
                 case ElementType.Thead:
-                    {
-                        return element.FindElements(By.TagName("thead")).FirstOrDefault();
-                    }
+                {
+                    return element.FindElements(By.TagName("thead")).FirstOrDefault();
+                }
                 case ElementType.Tr:
-                    {
-                        return element.FindElements(By.TagName("tr")).FirstOrDefault();
-                    }
+                {
+                    return element.FindElements(By.TagName("tr")).FirstOrDefault();
+                }
                 case ElementType.Table:
-                    {
-                        return element.FindElements(By.TagName("table")).FirstOrDefault();
-                    }
+                {
+                    return element.FindElements(By.TagName("table")).FirstOrDefault();
+                }
                 case ElementType.Text:
-                    {
-                        return element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "text");
-                    }
+                {
+                    return
+                        element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "text");
+                }
                 case ElementType.Password:
-                    {
-                        return element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "password");
-                    }
+                {
+                    return
+                        element.FindElements(By.TagName("input"))
+                            .FirstOrDefault(d => d.GetAttribute("type") == "password");
+                }
                 case ElementType.Submit:
-                    {
-                        return element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "submit");
-                    }
+                {
+                    return
+                        element.FindElements(By.TagName("input"))
+                            .FirstOrDefault(d => d.GetAttribute("type") == "submit");
+                }
                 case ElementType.DateTime:
-                    {
-                        return element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "datetime");
-                    }
+                {
+                    return
+                        element.FindElements(By.TagName("input"))
+                            .FirstOrDefault(d => d.GetAttribute("type") == "datetime");
+                }
                 case ElementType.DateTimeLocal:
-                    {
-                        return element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "checkbox");
-                    }
+                {
+                    return
+                        element.FindElements(By.TagName("input"))
+                            .FirstOrDefault(d => d.GetAttribute("type") == "checkbox");
+                }
                 case ElementType.Date:
-                    {
-                        return element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "date");
-                    }
+                {
+                    return
+                        element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "date");
+                }
                 case ElementType.Color:
-                    {
-                        return element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "color");
-                    }
+                {
+                    return
+                        element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "color");
+                }
                 case ElementType.Email:
-                    {
-                        return element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "email");
-                    }
+                {
+                    return
+                        element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "email");
+                }
                 case ElementType.Month:
-                    {
-                        return element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "month");
-                    }
+                {
+                    return
+                        element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "month");
+                }
                 case ElementType.Number:
-                    {
-                        return element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "number");
-                    }
+                {
+                    return
+                        element.FindElements(By.TagName("input"))
+                            .FirstOrDefault(d => d.GetAttribute("type") == "number");
+                }
                 case ElementType.Range:
-                    {
-                        return element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "range");
-                    }
+                {
+                    return
+                        element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "range");
+                }
                 case ElementType.Search:
-                    {
-                        return element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "search");
-                    }
+                {
+                    return
+                        element.FindElements(By.TagName("input"))
+                            .FirstOrDefault(d => d.GetAttribute("type") == "search");
+                }
                 case ElementType.Tel:
-                    {
-                        return element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "checkbox");
-                    }
+                {
+                    return
+                        element.FindElements(By.TagName("input"))
+                            .FirstOrDefault(d => d.GetAttribute("type") == "checkbox");
+                }
                 case ElementType.Time:
-                    {
-                        return element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "time");
-                    }
+                {
+                    return
+                        element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "time");
+                }
                 case ElementType.Url:
-                    {
-                        return element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "url");
-                    }
+                {
+                    return element.FindElements(By.TagName("input"))
+                        .FirstOrDefault(d => d.GetAttribute("type") == "url");
+                }
                 case ElementType.Week:
-                    {
-                        return element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "week");
-                    }
+                {
+                    return
+                        element.FindElements(By.TagName("input")).FirstOrDefault(d => d.GetAttribute("type") == "week");
+                }
             }
             return null;
         }
 
         /// <summary>
-        /// Gets the children elements of the specified type.
+        ///     Gets the children elements of the specified type.
         /// </summary>
         /// <param name="element">The element.</param>
         /// <param name="elementType">Type of the element.</param>
         /// <returns></returns>
-        public static ReadOnlyCollection<IWebElement> GetElementsOfType(this IWebElement element, ElementType elementType)
+        public static ReadOnlyCollection<IWebElement> GetElementsOfType(this IWebElement element,
+            ElementType elementType)
         {
             switch (elementType)
             {
                 case ElementType.Button:
-                    {
-                        return (ReadOnlyCollection<IWebElement>)element.FindElements(By.TagName("input"))
-                            .Where(d => d.GetAttribute("type") == "button");
-                    }
+                {
+                    return (ReadOnlyCollection<IWebElement>) element.FindElements(By.TagName("input"))
+                        .Where(d => d.GetAttribute("type") == "button");
+                }
                 case ElementType.CheckBox:
-                    {
-                        return (ReadOnlyCollection<IWebElement>)element.FindElements(By.TagName("input"))
-                            .Where(d => d.GetAttribute("type") == "checkbox");
-                    }
+                {
+                    return (ReadOnlyCollection<IWebElement>) element.FindElements(By.TagName("input"))
+                        .Where(d => d.GetAttribute("type") == "checkbox");
+                }
                 case ElementType.Div:
-                    {
-                        return element.FindElements(By.TagName("div"));
-                    }
+                {
+                    return element.FindElements(By.TagName("div"));
+                }
                 case ElementType.Img:
-                    {
-                        return element.FindElements(By.TagName("img"));
-                    }
+                {
+                    return element.FindElements(By.TagName("img"));
+                }
                 case ElementType.Label:
-                    {
-                        return element.FindElements(By.TagName("label"));
-                    }
+                {
+                    return element.FindElements(By.TagName("label"));
+                }
                 case ElementType.A:
-                    {
-                        return element.FindElements(By.TagName("a"));
-                    }
+                {
+                    return element.FindElements(By.TagName("a"));
+                }
                 case ElementType.Radio:
-                    {
-                        return (ReadOnlyCollection<IWebElement>)element.FindElements(By.TagName("radio"))
-                            .Where(d => d.GetAttribute("type") == "checkbox");
-                    }
+                {
+                    return (ReadOnlyCollection<IWebElement>) element.FindElements(By.TagName("radio"))
+                        .Where(d => d.GetAttribute("type") == "checkbox");
+                }
                 case ElementType.Select:
-                    {
-                        return element.FindElements(By.TagName("select"));
-                    }
+                {
+                    return element.FindElements(By.TagName("select"));
+                }
                 case ElementType.Span:
-                    {
-                        return element.FindElements(By.TagName("span"));
-                    }
+                {
+                    return element.FindElements(By.TagName("span"));
+                }
                 case ElementType.Tbody:
-                    {
-                        return element.FindElements(By.TagName("tbody"));
-                    }
+                {
+                    return element.FindElements(By.TagName("tbody"));
+                }
                 case ElementType.Td:
-                    {
-                        return element.FindElements(By.TagName("td"));
-                    }
+                {
+                    return element.FindElements(By.TagName("td"));
+                }
                 case ElementType.Thead:
-                    {
-                        return element.FindElements(By.TagName("thead"));
-                    }
+                {
+                    return element.FindElements(By.TagName("thead"));
+                }
                 case ElementType.Tr:
-                    {
-                        return element.FindElements(By.TagName("tr"));
-                    }
+                {
+                    return element.FindElements(By.TagName("tr"));
+                }
                 case ElementType.Table:
-                    {
-                        return element.FindElements(By.TagName("table"));
-                    }
+                {
+                    return element.FindElements(By.TagName("table"));
+                }
                 case ElementType.Text:
-                    {
-                        return (ReadOnlyCollection<IWebElement>)element.FindElements(By.TagName("input"))
-                            .Where(d => d.GetAttribute("type") == "text");
-                    }
+                {
+                    return (ReadOnlyCollection<IWebElement>) element.FindElements(By.TagName("input"))
+                        .Where(d => d.GetAttribute("type") == "text");
+                }
                 case ElementType.Password:
-                    {
-                        return (ReadOnlyCollection<IWebElement>)element.FindElements(By.TagName("input"))
-                            .Where(d => d.GetAttribute("type") == "password");
-                    }
+                {
+                    return (ReadOnlyCollection<IWebElement>) element.FindElements(By.TagName("input"))
+                        .Where(d => d.GetAttribute("type") == "password");
+                }
                 case ElementType.Submit:
-                    {
-                        return (ReadOnlyCollection<IWebElement>)element.FindElements(By.TagName("input"))
-                            .Where(d => d.GetAttribute("type") == "submit");
-                    }
+                {
+                    return (ReadOnlyCollection<IWebElement>) element.FindElements(By.TagName("input"))
+                        .Where(d => d.GetAttribute("type") == "submit");
+                }
                 case ElementType.DateTime:
-                    {
-                        return (ReadOnlyCollection<IWebElement>)element.FindElements(By.TagName("input"))
-                            .Where(d => d.GetAttribute("type") == "datetime");
-                    }
+                {
+                    return (ReadOnlyCollection<IWebElement>) element.FindElements(By.TagName("input"))
+                        .Where(d => d.GetAttribute("type") == "datetime");
+                }
                 case ElementType.DateTimeLocal:
-                    {
-                        return (ReadOnlyCollection<IWebElement>)element.FindElements(By.TagName("input"))
-                            .Where(d => d.GetAttribute("type") == "datetime-local");
-                    }
+                {
+                    return (ReadOnlyCollection<IWebElement>) element.FindElements(By.TagName("input"))
+                        .Where(d => d.GetAttribute("type") == "datetime-local");
+                }
                 case ElementType.Date:
-                    {
-                        return (ReadOnlyCollection<IWebElement>)element.FindElements(By.TagName("input"))
-                            .Where(d => d.GetAttribute("type") == "date");
-                    }
+                {
+                    return (ReadOnlyCollection<IWebElement>) element.FindElements(By.TagName("input"))
+                        .Where(d => d.GetAttribute("type") == "date");
+                }
                 case ElementType.Color:
-                    {
-                        return (ReadOnlyCollection<IWebElement>)element.FindElements(By.TagName("input"))
-                            .Where(d => d.GetAttribute("type") == "color");
-                    }
+                {
+                    return (ReadOnlyCollection<IWebElement>) element.FindElements(By.TagName("input"))
+                        .Where(d => d.GetAttribute("type") == "color");
+                }
                 case ElementType.Email:
-                    {
-                        return (ReadOnlyCollection<IWebElement>)element.FindElements(By.TagName("input"))
-                            .Where(d => d.GetAttribute("type") == "email");
-                    }
+                {
+                    return (ReadOnlyCollection<IWebElement>) element.FindElements(By.TagName("input"))
+                        .Where(d => d.GetAttribute("type") == "email");
+                }
                 case ElementType.Month:
-                    {
-                        return (ReadOnlyCollection<IWebElement>)element.FindElements(By.TagName("input"))
-                            .Where(d => d.GetAttribute("type") == "month");
-                    }
+                {
+                    return (ReadOnlyCollection<IWebElement>) element.FindElements(By.TagName("input"))
+                        .Where(d => d.GetAttribute("type") == "month");
+                }
                 case ElementType.Number:
-                    {
-                        return (ReadOnlyCollection<IWebElement>)element.FindElements(By.TagName("input"))
-                            .Where(d => d.GetAttribute("type") == "number");
-                    }
+                {
+                    return (ReadOnlyCollection<IWebElement>) element.FindElements(By.TagName("input"))
+                        .Where(d => d.GetAttribute("type") == "number");
+                }
                 case ElementType.Range:
-                    {
-                        return (ReadOnlyCollection<IWebElement>)element.FindElements(By.TagName("input"))
-                            .Where(d => d.GetAttribute("type") == "range");
-                    }
+                {
+                    return (ReadOnlyCollection<IWebElement>) element.FindElements(By.TagName("input"))
+                        .Where(d => d.GetAttribute("type") == "range");
+                }
                 case ElementType.Search:
-                    {
-                        return (ReadOnlyCollection<IWebElement>)element.FindElements(By.TagName("input"))
-                            .Where(d => d.GetAttribute("type") == "search");
-                    }
+                {
+                    return (ReadOnlyCollection<IWebElement>) element.FindElements(By.TagName("input"))
+                        .Where(d => d.GetAttribute("type") == "search");
+                }
                 case ElementType.Tel:
-                    {
-                        return (ReadOnlyCollection<IWebElement>)element.FindElements(By.TagName("input"))
-                            .Where(d => d.GetAttribute("type") == "checkbox");
-                    }
+                {
+                    return (ReadOnlyCollection<IWebElement>) element.FindElements(By.TagName("input"))
+                        .Where(d => d.GetAttribute("type") == "checkbox");
+                }
                 case ElementType.Time:
-                    {
-                        return (ReadOnlyCollection<IWebElement>)element.FindElements(By.TagName("input"))
-                            .Where(d => d.GetAttribute("type") == "time");
-                    }
+                {
+                    return (ReadOnlyCollection<IWebElement>) element.FindElements(By.TagName("input"))
+                        .Where(d => d.GetAttribute("type") == "time");
+                }
                 case ElementType.Url:
-                    {
-                        return (ReadOnlyCollection<IWebElement>)element.FindElements(By.TagName("input"))
-                            .Where(d => d.GetAttribute("type") == "url");
-                    }
+                {
+                    return (ReadOnlyCollection<IWebElement>) element.FindElements(By.TagName("input"))
+                        .Where(d => d.GetAttribute("type") == "url");
+                }
                 case ElementType.Week:
-                    {
-                        return (ReadOnlyCollection<IWebElement>)element.FindElements(By.TagName("input"))
-                            .Where(d => d.GetAttribute("type") == "week");
-                    }
+                {
+                    return (ReadOnlyCollection<IWebElement>) element.FindElements(By.TagName("input"))
+                        .Where(d => d.GetAttribute("type") == "week");
+                }
             }
             return null;
         }
 
         /// <summary>
-        /// Gets the children elements by.
+        ///     Gets the children elements by.
         /// </summary>
         /// <param name="element">The element.</param>
         /// <param name="locator">The locator.</param>
@@ -617,15 +642,15 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Waits until the element is visible.
+        ///     Waits until the element is visible.
         /// </summary>
         /// <param name="element">The element.</param>
         /// <param name="timespan">The timeout timespan.</param>
         public static void WaitUntilVisible(this IWebElement element, TimeSpan timespan)
         {
-            Stopwatch stopwatch = new Stopwatch();
+            var stopwatch = new Stopwatch();
             stopwatch.Start();
-            bool checking = false;
+            var checking = false;
             while (stopwatch.IsRunning && stopwatch.Elapsed < timespan)
             {
                 if (!checking)
@@ -648,15 +673,15 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Waits until the element exists.
+        ///     Waits until the element exists.
         /// </summary>
         /// <param name="element">The element.</param>
         /// <param name="timespan">The timeout timespan.</param>
         public static void WaitUntilExists(this IWebElement element, TimeSpan timespan)
         {
-            Stopwatch stopwatch = new Stopwatch();
+            var stopwatch = new Stopwatch();
             stopwatch.Start();
-            bool checking = false;
+            var checking = false;
             while (stopwatch.IsRunning && stopwatch.Elapsed < timespan)
             {
                 if (!checking)
@@ -679,7 +704,7 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Double clicks the element.
+        ///     Double clicks the element.
         /// </summary>
         /// <param name="element">The element.</param>
         public static void DoubleClick(this IWebElement element)
@@ -691,7 +716,7 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Right clicks the element.
+        ///     Right clicks the element.
         /// </summary>
         /// <param name="element">The element.</param>
         public static void RightClick(this IWebElement element)
@@ -703,7 +728,7 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Clicks and hold the element.
+        ///     Clicks and hold the element.
         /// </summary>
         /// <param name="element">The element.</param>
         public static void ClickAndHold(this IWebElement element)
@@ -715,7 +740,7 @@ namespace Selenium.Extensions
         }
 
         /// <summary>
-        /// Drags and drops a element onto another element.
+        ///     Drags and drops a element onto another element.
         /// </summary>
         /// <param name="element">The element.</param>
         /// <param name="targetElement">The target element.</param>
@@ -751,9 +776,9 @@ namespace Selenium.Extensions
             {
                 return false;
             }
-            string attribute = "checked";
+            var attribute = "checked";
             var att = element.GetAttribute(attribute);
-            if (String.IsNullOrWhiteSpace(att))
+            if (string.IsNullOrWhiteSpace(att))
             {
                 return false;
             }
@@ -785,11 +810,12 @@ namespace Selenium.Extensions
             {
                 return false;
             }
-            string attribute = "type";
+            var attribute = "type";
             var att = element.GetAttribute(attribute);
             var result = att.Equals("radio", StringComparison.OrdinalIgnoreCase);
             return result;
         }
+
 
         public static bool IsTextInput(this IWebElement element)
         {
@@ -853,5 +879,10 @@ namespace Selenium.Extensions
             return element;
         }
 
+        public static void SetTextForControl(this IWebElement element, string text)
+        {
+            element.Clear();
+            element.SendKeys(text);
+        }
     }
 }
