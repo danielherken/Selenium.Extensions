@@ -15,7 +15,7 @@ using OpenQA.Selenium.Safari;
 
 namespace Selenium.Extensions
 {
-    public class TestBuilder
+    public class GetWebDriver
     {
         /// <summary>
         /// Gets the current assembly directory.
@@ -37,144 +37,152 @@ namespace Selenium.Extensions
         /// <summary>
         /// Gets the web driver for locally installed browsers.
         /// </summary>
-        /// <param name="testUrl">The test URL.</param>
-        /// <param name="webDriver">The web driver.</param>
-        /// <param name="timeoutSeconds">The timeout seconds.</param>
-        /// <param name="deleteAllCookies">if set to <c>true</c> [delete all cookies].</param>
-        /// <param name="maximiseWindow">if set to <c>true</c> [maximise window].</param>
+        /// <param name="testSettings">The test settings.</param>
         /// <returns></returns>
         /// <exception cref="Selenium.Extensions.TestException">The details you specified are invalid</exception>
-        public static IWebDriver GetInstalledWebDriver(string testUrl, WebDriver webDriver, int timeoutSeconds,
-            bool deleteAllCookies = true, bool maximiseWindow = true)
+        public static ITestWebDriver GetInstalledBrowserWebDriver(TestSettings testSettings)
         {
-            switch (webDriver)
+            if (testSettings.ScreenShotDirectory != null)
             {
-                case WebDriver.ChromeDriver:
+                if (!Directory.Exists(testSettings.ScreenShotDirectory))
                 {
-                    var driverService = ChromeDriverService.CreateDefaultService(AssemblyDirectory, "chromedriver.exe");
-                    var options = new ChromeOptions
-                    {
-                        LeaveBrowserRunning = false
-                    };
-                    options.AddArgument("--no-default-browser-check");
-                    options.AddArgument("--test-type=browser");
-                    options.AddArgument("--start-maximized");
-                    options.AddArgument("--allow-no-sandbox-job");
-                    options.AddArgument("--disable-component-update");
-                    options.AddArgument("--auth-server-whitelist=" + new Uri(testUrl).Authority.Replace("www", "*"));
-                    var driver = new ChromeDriver(driverService, options, new TimeSpan(0, 0, timeoutSeconds));
-                    if (deleteAllCookies)
-                    {
-                        driver.Manage().Cookies.DeleteAllCookies();
-                    }
-                    driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(timeoutSeconds));
-                    if (maximiseWindow)
-                    {
-                        driver.Manage().Window.Maximize();
-                    }
-                    return driver;
+                    Directory.CreateDirectory(testSettings.ScreenShotDirectory);
                 }
-                case WebDriver.FirefoxDriver:
-                {
-                    var driverService = FirefoxDriverService.CreateDefaultService();
-                    var options = new FirefoxOptions();
-                    var driver = new FirefoxDriver(driverService, options, new TimeSpan(0, 0, timeoutSeconds));
-                    if (deleteAllCookies)
+            }
+            switch (testSettings.DriverType)
+            {
+                case WebDriverType.ChromeDriver:
                     {
-                        driver.Manage().Cookies.DeleteAllCookies();
+                        var driverService = ChromeDriverService.CreateDefaultService(AssemblyDirectory, "chromedriver.exe");
+                        var options = new ChromeOptions
+                        {
+                            LeaveBrowserRunning = false
+                        };
+                        options.AddArgument("--no-default-browser-check");
+                        options.AddArgument("--test-type=browser");
+                        options.AddArgument("--start-maximized");
+                        options.AddArgument("--allow-no-sandbox-job");
+                        options.AddArgument("--disable-component-update");
+                        options.AddArgument("--auth-server-whitelist=" + testSettings.TestUri.Authority.Replace("www", "*"));
+                        var driver = new ChromeDriver(driverService, options, testSettings.TimeoutTimeSpan);
+                        if (testSettings.DeleteAllCookies)
+                        {
+                            driver.Manage().Cookies.DeleteAllCookies();
+                        }
+                        driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
+                        if (testSettings.MaximiseBrowser)
+                        {
+                            driver.Manage().Window.Maximize();
+                        }
+                        var extendedWebDriver = new TestWebDriver(driver, testSettings);
+                        return extendedWebDriver;
                     }
-                    driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(timeoutSeconds));
-                    if (maximiseWindow)
+                case WebDriverType.FirefoxDriver:
                     {
-                        driver.Manage().Window.Maximize();
+                        var driverService = FirefoxDriverService.CreateDefaultService();
+                        var options = new FirefoxOptions();
+                        var driver = new FirefoxDriver(driverService, options,testSettings.TimeoutTimeSpan);
+                        if (testSettings.DeleteAllCookies)
+                        {
+                            driver.Manage().Cookies.DeleteAllCookies();
+                        }
+                        driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
+                        if (testSettings.MaximiseBrowser)
+                        {
+                            driver.Manage().Window.Maximize();
+                        }
+                        var extendedWebDriver = new TestWebDriver(driver, testSettings);
+                        return extendedWebDriver;
                     }
-                    return driver;
-                }
-                case WebDriver.InternetExplorerDriver:
-                {
-                    var driverName = "IEDriverServer.exe";
-                    if (Environment.Is64BitProcess)
+                case WebDriverType.InternetExplorerDriver:
                     {
-                        driverName = "IEDriverServer64.exe";
+                        var driverName = "IEDriverServer.exe";
+                        if (Environment.Is64BitProcess)
+                        {
+                            driverName = "IEDriverServer64.exe";
+                        }
+                        var driverService = InternetExplorerDriverService.CreateDefaultService(AssemblyDirectory, driverName);
+                        var options = new InternetExplorerOptions
+                        {
+                            IgnoreZoomLevel = true,
+                            IntroduceInstabilityByIgnoringProtectedModeSettings = true,
+                            BrowserAttachTimeout = testSettings.TimeoutTimeSpan,
+                            RequireWindowFocus = true,
+                            ElementScrollBehavior = InternetExplorerElementScrollBehavior.Bottom,
+                            InitialBrowserUrl = testSettings.TestUri.AbsoluteUri,
+                            EnsureCleanSession = true,
+                            EnableNativeEvents = true
+                        };
+                        var driver = new InternetExplorerDriver(driverService, options, testSettings.TimeoutTimeSpan);
+                        if (testSettings.DeleteAllCookies)
+                        {
+                            driver.Manage().Cookies.DeleteAllCookies();
+                        }
+                        driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
+                        if (testSettings.MaximiseBrowser)
+                        {
+                            driver.Manage().Window.Maximize();
+                        }
+                        var extendedWebDriver = new TestWebDriver(driver, testSettings);
+                        return extendedWebDriver;
                     }
-                    var driverService = InternetExplorerDriverService.CreateDefaultService(AssemblyDirectory, driverName);
-                    var options = new InternetExplorerOptions
+                case WebDriverType.EdgeDriver:
                     {
-                        IgnoreZoomLevel = true,
-                        IntroduceInstabilityByIgnoringProtectedModeSettings = true,
-                        BrowserAttachTimeout = new TimeSpan(0, 0, 0, timeoutSeconds),
-                        RequireWindowFocus = true,
-                        ElementScrollBehavior = InternetExplorerElementScrollBehavior.Bottom,
-                        InitialBrowserUrl = testUrl,
-                        EnsureCleanSession = true,
-                        EnableNativeEvents = true
-                    };
-                    var driver = new InternetExplorerDriver(driverService, options, new TimeSpan(0, 0, timeoutSeconds));
-                    if (deleteAllCookies)
-                    {
-                        driver.Manage().Cookies.DeleteAllCookies();
+                        var driverService = EdgeDriverService.CreateDefaultService(AssemblyDirectory,
+                            "MicrosoftWebDriver.exe");
+                        var options = new EdgeOptions
+                        {
+                            PageLoadStrategy = EdgePageLoadStrategy.Default
+                        };
+                        var driver = new EdgeDriver(driverService, options, testSettings.TimeoutTimeSpan);
+                        if (testSettings.DeleteAllCookies)
+                        {
+                            driver.Manage().Cookies.DeleteAllCookies();
+                        }
+                        driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
+                        if (testSettings.MaximiseBrowser)
+                        {
+                            driver.Manage().Window.Maximize();
+                        }
+                        var extendedWebDriver = new TestWebDriver(driver, testSettings);
+                        return extendedWebDriver;
                     }
-                    driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(timeoutSeconds));
-                    if (maximiseWindow)
+                case WebDriverType.OperaDriver:
                     {
-                        driver.Manage().Window.Maximize();
+                        var driverService = OperaDriverService.CreateDefaultService();
+                        var options = new OperaOptions
+                        {
+                            LeaveBrowserRunning = false
+                        };
+                        var driver = new OperaDriver(driverService, options, testSettings.TimeoutTimeSpan);
+                        if (testSettings.DeleteAllCookies)
+                        {
+                            driver.Manage().Cookies.DeleteAllCookies();
+                        }
+                        driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
+                        if (testSettings.MaximiseBrowser)
+                        {
+                            driver.Manage().Window.Maximize();
+                        }
+                        var extendedWebDriver = new TestWebDriver(driver, testSettings);
+                        return extendedWebDriver;
                     }
-                    return driver;
-                }
-                case WebDriver.EdgeDriver:
-                {
-                    var driverService = EdgeDriverService.CreateDefaultService(AssemblyDirectory,
-                        "MicrosoftWebDriver.exe");
-                    var options = new EdgeOptions
+                case WebDriverType.SafariDriver:
                     {
-                        PageLoadStrategy = EdgePageLoadStrategy.Default
-                    };
-                    var driver = new EdgeDriver(driverService, options, new TimeSpan(0, 0, timeoutSeconds));
-                    if (deleteAllCookies)
-                    {
-                        driver.Manage().Cookies.DeleteAllCookies();
+                        var options = new SafariOptions();
+                        var driver = new SafariDriver(options);
+                        if (testSettings.DeleteAllCookies)
+                        {
+                            driver.Manage().Cookies.DeleteAllCookies();
+                        }
+                        driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
+                        if (testSettings.MaximiseBrowser)
+                        {
+                            driver.Manage().Window.Maximize();
+                        }
+                        var extendedWebDriver = new TestWebDriver(driver, testSettings);
+                        return extendedWebDriver;
                     }
-                    driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(timeoutSeconds));
-                    if (maximiseWindow)
-                    {
-                        driver.Manage().Window.Maximize();
-                    }
-                    return driver;
-                }
-                case WebDriver.OperaDriver:
-                {
-                    var driverService = OperaDriverService.CreateDefaultService();
-                    var options = new OperaOptions
-                    {
-                        LeaveBrowserRunning = false
-                    };
-                    var driver = new OperaDriver(driverService, options, new TimeSpan(0, 0, timeoutSeconds));
-                    if (deleteAllCookies)
-                    {
-                        driver.Manage().Cookies.DeleteAllCookies();
-                    }
-                    driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(timeoutSeconds));
-                    if (maximiseWindow)
-                    {
-                        driver.Manage().Window.Maximize();
-                    }
-                    return driver;
-                }
-                case WebDriver.SafariDriver:
-                {
-                    var options = new SafariOptions();
-                    var driver = new SafariDriver(options);
-                    if (deleteAllCookies)
-                    {
-                        driver.Manage().Cookies.DeleteAllCookies();
-                    }
-                    driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(timeoutSeconds));
-                    if (maximiseWindow)
-                    {
-                        driver.Manage().Window.Maximize();
-                    }
-                    return driver;
-                }
             }
             throw new TestException("The details you specified are invalid");
         }
@@ -182,23 +190,17 @@ namespace Selenium.Extensions
         /// <summary>
         /// Gets the web driver for standalone browsers.
         /// </summary>
-        /// <param name="testUrl">The test URL.</param>
-        /// <param name="webDriver">The web driver.</param>
-        /// <param name="browserVersion">The browser version.</param>
-        /// <param name="timeoutSeconds">The timeout seconds.</param>
-        /// <param name="deleteAllCookies">if set to <c>true</c> , deletes all cookies before starting a test.</param>
-        /// <param name="maximiseWindow">if set to <c>true</c> , maximise the window.</param>
+        /// <param name="testSettings">The test settings.</param>
         /// <returns></returns>
-        public static IWebDriver GetStandaloneWebDriver(string testUrl, WebDriver webDriver, int browserVersion,
-            int timeoutSeconds, bool deleteAllCookies = true, bool maximiseWindow = true)
+        public static ITestWebDriver GetStandaloneWebDriver(TestSettings testSettings)
         {
-            switch (webDriver)
+            switch (testSettings.DriverType)
             {
-                case WebDriver.ChromeDriver:
+                case WebDriverType.ChromeDriver:
                 {
                     var multiBrowserExe =
                         Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                        "\\MultiBrowser\\MB_Chrome" + browserVersion + ".exe";
+                        "\\MultiBrowser\\MB_Chrome" + testSettings.BrowserVersion + ".exe";
                     var driverService = ChromeDriverService.CreateDefaultService(AssemblyDirectory, "chromedriver.exe");
                     var options = new ChromeOptions
                     {
@@ -210,40 +212,42 @@ namespace Selenium.Extensions
                     options.AddArgument("--start-maximized");
                     options.AddArgument("--allow-no-sandbox-job");
                     options.AddArgument("--disable-component-update");
-                    options.AddArgument("--auth-server-whitelist=" + new Uri(testUrl).Authority.Replace("www", "*"));
-                    var driver = new ChromeDriver(driverService, options, new TimeSpan(0, 0, timeoutSeconds));
-                    if (deleteAllCookies)
+                    options.AddArgument("--auth-server-whitelist=" + testSettings.TestUri.Authority.Replace("www", "*"));
+                    var driver = new ChromeDriver(driverService, options, testSettings.TimeoutTimeSpan);
+                    if (testSettings.DeleteAllCookies)
                     {
                         driver.Manage().Cookies.DeleteAllCookies();
                     }
-                    driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(timeoutSeconds));
-                    if (maximiseWindow)
+                    driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
+                    if (testSettings.MaximiseBrowser)
                     {
                         driver.Manage().Window.Maximize();
                     }
-                    return driver;
-                }
-                case WebDriver.FirefoxDriver:
+                        var extendedWebDriver = new TestWebDriver(driver, testSettings);
+                        return extendedWebDriver;
+                    }
+                case WebDriverType.FirefoxDriver:
                 {
                     var multiBrowserExe =
                         Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                        "\\MultiBrowser\\MB_Chrome" + browserVersion + ".exe";
+                        "\\MultiBrowser\\MB_Chrome" + testSettings.BrowserVersion + ".exe";
                     var driverService = FirefoxDriverService.CreateDefaultService();
                     driverService.FirefoxBinaryPath = multiBrowserExe;
                     var options = new FirefoxOptions();
-                    var driver = new FirefoxDriver(driverService, options, new TimeSpan(0, 0, timeoutSeconds));
-                    if (deleteAllCookies)
+                    var driver = new FirefoxDriver(driverService, options, testSettings.TimeoutTimeSpan);
+                    if (testSettings.DeleteAllCookies)
                     {
                         driver.Manage().Cookies.DeleteAllCookies();
                     }
-                    driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(timeoutSeconds));
-                    if (maximiseWindow)
+                    driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
+                    if (testSettings.MaximiseBrowser)
                     {
                         driver.Manage().Window.Maximize();
                     }
-                    return driver;
-                }
-                case WebDriver.InternetExplorerDriver:
+                        var extendedWebDriver = new TestWebDriver(driver, testSettings);
+                        return extendedWebDriver;
+                    }
+                case WebDriverType.InternetExplorerDriver:
                 {
                     var driverName = "IEDriverServer.exe";
                     if (Environment.Is64BitProcess)
@@ -255,26 +259,27 @@ namespace Selenium.Extensions
                     {
                         IgnoreZoomLevel = true,
                         IntroduceInstabilityByIgnoringProtectedModeSettings = true,
-                        BrowserAttachTimeout = new TimeSpan(0, 0, 0, timeoutSeconds),
+                        BrowserAttachTimeout = testSettings.TimeoutTimeSpan,
                         RequireWindowFocus = true,
                         ElementScrollBehavior = InternetExplorerElementScrollBehavior.Bottom,
-                        InitialBrowserUrl = testUrl,
+                        InitialBrowserUrl = testSettings.TestUri.AbsoluteUri,
                         EnsureCleanSession = true,
                         EnableNativeEvents = true
                     };
-                    var driver = new InternetExplorerDriver(driverService, options, new TimeSpan(0, 0, timeoutSeconds));
-                    if (deleteAllCookies)
+                    var driver = new InternetExplorerDriver(driverService, options, testSettings.TimeoutTimeSpan);
+                    if (testSettings.DeleteAllCookies)
                     {
                         driver.Manage().Cookies.DeleteAllCookies();
                     }
-                    driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(timeoutSeconds));
-                    if (maximiseWindow)
+                    driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
+                    if (testSettings.MaximiseBrowser)
                     {
                         driver.Manage().Window.Maximize();
                     }
-                    return driver;
-                }
-                case WebDriver.EdgeDriver:
+                        var extendedWebDriver = new TestWebDriver(driver, testSettings);
+                        return extendedWebDriver;
+                    }
+                case WebDriverType.EdgeDriver:
                 {
                     var driverService = EdgeDriverService.CreateDefaultService(AssemblyDirectory,
                         "MicrosoftWebDriver.exe");
@@ -282,62 +287,65 @@ namespace Selenium.Extensions
                     {
                         PageLoadStrategy = EdgePageLoadStrategy.Default
                     };
-                    var driver = new EdgeDriver(driverService, options, new TimeSpan(0, 0, timeoutSeconds));
-                    if (deleteAllCookies)
+                    var driver = new EdgeDriver(driverService, options, testSettings.TimeoutTimeSpan);
+                    if (testSettings.DeleteAllCookies)
                     {
                         driver.Manage().Cookies.DeleteAllCookies();
                     }
-                    driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(timeoutSeconds));
-                    if (maximiseWindow)
+                    driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
+                    if (testSettings.MaximiseBrowser)
                     {
                         driver.Manage().Window.Maximize();
                     }
-                    return driver;
-                }
-                case WebDriver.OperaDriver:
+                        var extendedWebDriver = new TestWebDriver(driver, testSettings);
+                        return extendedWebDriver;
+                    }
+                case WebDriverType.OperaDriver:
                 {
                     var multiBrowserExe =
                         Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                        "\\MultiBrowser\\MB_Chrome" + browserVersion + ".exe";
+                        "\\MultiBrowser\\MB_Chrome" + testSettings.BrowserVersion + ".exe";
                     var driverService = OperaDriverService.CreateDefaultService();
                     var options = new OperaOptions
                     {
                         LeaveBrowserRunning = false,
                         BinaryLocation = multiBrowserExe
                     };
-                    var driver = new OperaDriver(driverService, options, new TimeSpan(0, 0, timeoutSeconds));
-                    if (deleteAllCookies)
+                    var driver = new OperaDriver(driverService, options, testSettings.TimeoutTimeSpan);
+                    if (testSettings.DeleteAllCookies)
                     {
                         driver.Manage().Cookies.DeleteAllCookies();
                     }
-                    driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(timeoutSeconds));
-                    if (maximiseWindow)
+                    driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
+                    if (testSettings.MaximiseBrowser)
                     {
                         driver.Manage().Window.Maximize();
                     }
-                    return driver;
-                }
-                case WebDriver.SafariDriver:
+                        var extendedWebDriver = new TestWebDriver(driver, testSettings);
+                        return extendedWebDriver;
+                    }
+                case WebDriverType.SafariDriver:
                 {
                     var multiBrowserExe =
                         Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                        "\\MultiBrowser\\MB_Chrome" + browserVersion + ".exe";
+                        "\\MultiBrowser\\MB_Chrome" + testSettings.BrowserVersion + ".exe";
                     var options = new SafariOptions
                     {
                         SafariLocation = multiBrowserExe
                     };
                     var driver = new SafariDriver(options);
-                    if (deleteAllCookies)
+                    if (testSettings.DeleteAllCookies)
                     {
                         driver.Manage().Cookies.DeleteAllCookies();
                     }
-                    driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(timeoutSeconds));
-                    if (maximiseWindow)
+                    driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
+                    if (testSettings.MaximiseBrowser)
                     {
                         driver.Manage().Window.Maximize();
                     }
-                    return driver;
-                }
+                        var extendedWebDriver = new TestWebDriver(driver, testSettings);
+                        return extendedWebDriver;
+                    }
             }
             return null;
         }
@@ -345,13 +353,10 @@ namespace Selenium.Extensions
         /// <summary>
         /// Gets the multi browser emulator web driver.
         /// </summary>
-        /// <param name="testUrl">The test URL.</param>
+        /// <param name="testSettings">The test settings.</param>
         /// <param name="emulator">The emulator.</param>
-        /// <param name="timeoutSeconds">The timeout seconds.</param>
-        /// <param name="deleteAllCookies">if set to <c>true</c> deletes all cookies.</param>
         /// <returns></returns>
-        public static IWebDriver GetMultiBrowserEmulatorWebDriver(string testUrl, Emulator emulator, int timeoutSeconds,
-            bool deleteAllCookies = true)
+        public static ITestWebDriver GetMultiBrowserEmulatorWebDriver(TestSettings testSettings, Emulator emulator)
         {
             var driverService = ChromeDriverService.CreateDefaultService(AssemblyDirectory, "chromedriver.exe");
             var currentInstallPath = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\MultiBrowser", false) ??
@@ -375,31 +380,24 @@ namespace Selenium.Extensions
                 BinaryLocation =
                     Path.Combine(installPathValue ?? @"C:\Program Files (x86)\MultiBrowser", "MultiBrowser Emulator.exe")
             };
-            var driver = new ChromeDriver(driverService, options, new TimeSpan(0, 0, timeoutSeconds));
-            if (deleteAllCookies)
+            var driver = new ChromeDriver(driverService, options, testSettings.TimeoutTimeSpan);
+            if (testSettings.DeleteAllCookies)
             {
                 driver.Manage().Cookies.DeleteAllCookies();
             }
-            driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(timeoutSeconds));
-            return driver;
+            driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
+            var extendedWebDriver = new TestWebDriver(driver, testSettings);
+            return extendedWebDriver;
         }
 
         /// <summary>
         /// Gets the sauce labs web driver.
         /// </summary>
-        /// <param name="testUrl">The test URL.</param>
-        /// <param name="hubUrl">The hub URL.</param>
-        /// <param name="sauceLabsUsername">The sauce labs username.</param>
-        /// <param name="sauceLabsAccessToken">The sauce labs access token.</param>
+        /// <param name="testSettings">The test settings.</param>
         /// <param name="browserVendor">The browser vendor.</param>
         /// <param name="cloudBrowserName">Name of the cloud browser.</param>
-        /// <param name="browserVersion">The browser version.</param>
-        /// <param name="takeScreenshots">if set to <c>true</c> support taking screenshots.</param>
-        /// <param name="timeoutSeconds">The timeout in seconds.</param>
         /// <returns></returns>
-        public static IWebDriver GetSauceLabsWebDriver(string testUrl, string hubUrl, string sauceLabsUsername,
-            string sauceLabsAccessToken, CloudBrowserVendor browserVendor, CloudBrowserName cloudBrowserName,
-            int browserVersion, bool takeScreenshots, int timeoutSeconds)
+        public static ITestWebDriver GetSauceLabsWebDriver(TestSettings testSettings, CloudBrowserVendor browserVendor, CloudBrowserName cloudBrowserName)
         {
             var capabilities = new DesiredCapabilities();
             switch (browserVendor)
@@ -408,17 +406,17 @@ namespace Selenium.Extensions
                     capabilities = DesiredCapabilities.IPad();
                     var iPadCapabilites = new Dictionary<string, object>
                     {
-                        {"version", browserVersion.ToString(CultureInfo.InvariantCulture)},
-                        {"username", sauceLabsUsername},
-                        {"accessKey", sauceLabsAccessToken},
+                        {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
+                        {"username", testSettings.SeleniumHubSettings.HubUsername},
+                        {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
                         {
                             "name",
-                            "iPad " + browserVersion.ToString(CultureInfo.InvariantCulture) + " - " +
+                            "iPad " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) + " - " +
                             DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
                         },
                         {"javascriptEnabled", true},
                         {"acceptSslCerts", true},
-                        {"takesScreenshot", takeScreenshots},
+                        {"takesScreenshot", true},
                         {"device-orientation", "portrait"}
                     };
                     foreach (var capability in iPadCapabilites)
@@ -430,17 +428,17 @@ namespace Selenium.Extensions
                     capabilities = DesiredCapabilities.IPhone();
                     var iPhoneCapabilites = new Dictionary<string, object>
                     {
-                        {"version", browserVersion.ToString(CultureInfo.InvariantCulture)},
-                        {"username", sauceLabsUsername},
-                        {"accessKey", sauceLabsAccessToken},
+                        {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
+                        {"username", testSettings.SeleniumHubSettings.HubUsername},
+                        {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
                         {
                             "name",
-                            "iPhone " + browserVersion.ToString(CultureInfo.InvariantCulture) + " - " +
+                            "iPhone " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) + " - " +
                             DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
                         },
                         {"javascriptEnabled", true},
                         {"acceptSslCerts", true},
-                        {"takesScreenshot", takeScreenshots},
+                        {"takesScreenshot", true},
                         {"device-orientation", "portrait"}
                     };
                     foreach (var capability in iPhoneCapabilites)
@@ -454,9 +452,9 @@ namespace Selenium.Extensions
                     {
                         {"platform", "Linux"},
                         {"deviceName", "Android Emulator"},
-                        {"version", browserVersion.ToString(CultureInfo.InvariantCulture)},
-                        {"username", sauceLabsUsername},
-                        {"accessKey", sauceLabsAccessToken},
+                        {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
+                        {"username", testSettings.SeleniumHubSettings.HubUsername},
+                        {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
                         {
                             "name",
                             "Android Emulator - " + DateTime.Now.ToShortDateString() + " " +
@@ -464,7 +462,7 @@ namespace Selenium.Extensions
                         },
                         {"javascriptEnabled", true},
                         {"acceptSslCerts", true},
-                        {"takesScreenshot", takeScreenshots},
+                        {"takesScreenshot", true},
                         {"device-orientation", "portrait"}
                     };
                     foreach (var capability in androidCapabilites)
@@ -481,17 +479,17 @@ namespace Selenium.Extensions
                             var yosemiteChromeCapabilites = new Dictionary<string, object>
                             {
                                 {"platform", "OS X 10.10"},
-                                {"version", browserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", sauceLabsUsername},
-                                {"accessKey", sauceLabsAccessToken},
+                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
+                                {"username", testSettings.SeleniumHubSettings.HubUsername},
+                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
                                 {
                                     "name",
-                                    "Yosemite Chrome " + browserVersion.ToString(CultureInfo.InvariantCulture) + " - " +
+                                    "Yosemite Chrome " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) + " - " +
                                     DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
                                 },
                                 {"javascriptEnabled", true},
                                 {"acceptSslCerts", true},
-                                {"takesScreenshot", takeScreenshots}
+                                {"takesScreenshot", true}
                             };
                             foreach (var capability in yosemiteChromeCapabilites)
                             {
@@ -505,17 +503,17 @@ namespace Selenium.Extensions
                             var yosemiteFirefoxCapabilites = new Dictionary<string, object>
                             {
                                 {"platform", "OS X 10.10"},
-                                {"version", browserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", sauceLabsUsername},
-                                {"accessKey", sauceLabsAccessToken},
+                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
+                                {"username", testSettings.SeleniumHubSettings.HubUsername},
+                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
                                 {
                                     "name",
-                                    "Yosemite Firefox " + browserVersion.ToString(CultureInfo.InvariantCulture) + " - " +
+                                    "Yosemite Firefox " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) + " - " +
                                     DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
                                 },
                                 {"javascriptEnabled", true},
                                 {"acceptSslCerts", true},
-                                {"takesScreenshot", takeScreenshots}
+                                {"takesScreenshot", true}
                             };
                             foreach (var capability in yosemiteFirefoxCapabilites)
                             {
@@ -529,17 +527,17 @@ namespace Selenium.Extensions
                             var yosemiteSafariCapabilites = new Dictionary<string, object>
                             {
                                 {"platform", "OS X 10.10"},
-                                {"version", browserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", sauceLabsUsername},
-                                {"accessKey", sauceLabsAccessToken},
+                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
+                                {"username", testSettings.SeleniumHubSettings.HubUsername},
+                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
                                 {
                                     "name",
-                                    "Yosemite Safari " + browserVersion.ToString(CultureInfo.InvariantCulture) + " - " +
+                                    "Yosemite Safari " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) + " - " +
                                     DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
                                 },
                                 {"javascriptEnabled", true},
                                 {"acceptSslCerts", true},
-                                {"takesScreenshot", takeScreenshots}
+                                {"takesScreenshot", true}
                             };
                             foreach (var capability in yosemiteSafariCapabilites)
                             {
@@ -558,17 +556,17 @@ namespace Selenium.Extensions
                             var maveriksChromeCapabilites = new Dictionary<string, object>
                             {
                                 {"platform", "OS X 10.9"},
-                                {"version", browserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", sauceLabsUsername},
-                                {"accessKey", sauceLabsAccessToken},
+                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
+                                {"username", testSettings.SeleniumHubSettings.HubUsername},
+                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
                                 {
                                     "name",
-                                    "Mavericks Chrome " + browserVersion.ToString(CultureInfo.InvariantCulture) + " - " +
+                                    "Mavericks Chrome " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) + " - " +
                                     DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
                                 },
                                 {"javascriptEnabled", true},
                                 {"acceptSslCerts", true},
-                                {"takesScreenshot", takeScreenshots}
+                                {"takesScreenshot", true}
                             };
                             foreach (var capability in maveriksChromeCapabilites)
                             {
@@ -582,17 +580,17 @@ namespace Selenium.Extensions
                             var maveriksFirefoxCapabilites = new Dictionary<string, object>
                             {
                                 {"platform", "OS X 10.9"},
-                                {"version", browserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", sauceLabsUsername},
-                                {"accessKey", sauceLabsAccessToken},
+                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
+                                {"username", testSettings.SeleniumHubSettings.HubUsername},
+                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
                                 {
                                     "name",
-                                    "Mavericks Firefox " + browserVersion.ToString(CultureInfo.InvariantCulture) + " - " +
+                                    "Mavericks Firefox " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) + " - " +
                                     DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
                                 },
                                 {"javascriptEnabled", true},
                                 {"acceptSslCerts", true},
-                                {"takesScreenshot", takeScreenshots}
+                                {"takesScreenshot", true}
                             };
                             foreach (var capability in maveriksFirefoxCapabilites)
                             {
@@ -606,17 +604,17 @@ namespace Selenium.Extensions
                             var maveriksSafariCapabilites = new Dictionary<string, object>
                             {
                                 {"platform", "OS X 10.9"},
-                                {"version", browserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", sauceLabsUsername},
-                                {"accessKey", sauceLabsAccessToken},
+                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
+                                {"username", testSettings.SeleniumHubSettings.HubUsername},
+                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
                                 {
                                     "name",
-                                    "Mavericks Safari " + browserVersion.ToString(CultureInfo.InvariantCulture) + " - " +
+                                    "Mavericks Safari " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) + " - " +
                                     DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
                                 },
                                 {"javascriptEnabled", true},
                                 {"acceptSslCerts", true},
-                                {"takesScreenshot", takeScreenshots}
+                                {"takesScreenshot", true}
                             };
                             foreach (var capability in maveriksSafariCapabilites)
                             {
@@ -635,17 +633,17 @@ namespace Selenium.Extensions
                             var mountainLionChromeCapabilites = new Dictionary<string, object>
                             {
                                 {"platform", "OS X 10.8"},
-                                {"version", browserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", sauceLabsUsername},
-                                {"accessKey", sauceLabsAccessToken},
+                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
+                                {"username", testSettings.SeleniumHubSettings.HubUsername},
+                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
                                 {
                                     "name",
-                                    "Mountain Lion Chrome " + browserVersion.ToString(CultureInfo.InvariantCulture) +
+                                    "Mountain Lion Chrome " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) +
                                     " - " + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
                                 },
                                 {"javascriptEnabled", true},
                                 {"acceptSslCerts", true},
-                                {"takesScreenshot", takeScreenshots}
+                                {"takesScreenshot", true}
                             };
                             foreach (var capability in mountainLionChromeCapabilites)
                             {
@@ -659,17 +657,17 @@ namespace Selenium.Extensions
                             var mountainLionFirefoxCapabilites = new Dictionary<string, object>
                             {
                                 {"platform", "OS X 10.8"},
-                                {"version", browserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", sauceLabsUsername},
-                                {"accessKey", sauceLabsAccessToken},
+                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
+                                {"username", testSettings.SeleniumHubSettings.HubUsername},
+                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
                                 {
                                     "name",
-                                    "Mountain Lion Firefox " + browserVersion.ToString(CultureInfo.InvariantCulture) +
+                                    "Mountain Lion Firefox " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) +
                                     " - " + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
                                 },
                                 {"javascriptEnabled", true},
                                 {"acceptSslCerts", true},
-                                {"takesScreenshot", takeScreenshots}
+                                {"takesScreenshot", true}
                             };
                             foreach (var capability in mountainLionFirefoxCapabilites)
                             {
@@ -683,17 +681,17 @@ namespace Selenium.Extensions
                             var mountainLionSafariCapabilites = new Dictionary<string, object>
                             {
                                 {"platform", "OS X 10.8"},
-                                {"version", browserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", sauceLabsUsername},
-                                {"accessKey", sauceLabsAccessToken},
+                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
+                                {"username", testSettings.SeleniumHubSettings.HubUsername},
+                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
                                 {
                                     "name",
-                                    "Mountain Lion Safari " + browserVersion.ToString(CultureInfo.InvariantCulture) +
+                                    "Mountain Lion Safari " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) +
                                     " - " + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
                                 },
                                 {"javascriptEnabled", true},
                                 {"acceptSslCerts", true},
-                                {"takesScreenshot", takeScreenshots}
+                                {"takesScreenshot", true}
                             };
                             foreach (var capability in mountainLionSafariCapabilites)
                             {
@@ -712,17 +710,17 @@ namespace Selenium.Extensions
                             var snowLeopardChromeCapabilites = new Dictionary<string, object>
                             {
                                 {"platform", "OS X 10.6"},
-                                {"version", browserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", sauceLabsUsername},
-                                {"accessKey", sauceLabsAccessToken},
+                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
+                                {"username", testSettings.SeleniumHubSettings.HubUsername},
+                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
                                 {
                                     "name",
-                                    "Snow Leopard Chrome " + browserVersion.ToString(CultureInfo.InvariantCulture) +
+                                    "Snow Leopard Chrome " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) +
                                     " - " + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
                                 },
                                 {"javascriptEnabled", true},
                                 {"acceptSslCerts", true},
-                                {"takesScreenshot", takeScreenshots}
+                                {"takesScreenshot", true}
                             };
                             foreach (var capability in snowLeopardChromeCapabilites)
                             {
@@ -736,17 +734,17 @@ namespace Selenium.Extensions
                             var snowLeopardFirefoxCapabilites = new Dictionary<string, object>
                             {
                                 {"platform", "OS X 10.6"},
-                                {"version", browserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", sauceLabsUsername},
-                                {"accessKey", sauceLabsAccessToken},
+                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
+                                {"username", testSettings.SeleniumHubSettings.HubUsername},
+                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
                                 {
                                     "name",
-                                    "Snow Leopard Firefox " + browserVersion.ToString(CultureInfo.InvariantCulture) +
+                                    "Snow Leopard Firefox " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) +
                                     " - " + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
                                 },
                                 {"javascriptEnabled", true},
                                 {"acceptSslCerts", true},
-                                {"takesScreenshot", takeScreenshots}
+                                {"takesScreenshot", true}
                             };
                             foreach (var capability in snowLeopardFirefoxCapabilites)
                             {
@@ -760,17 +758,17 @@ namespace Selenium.Extensions
                             var snowLeopardSafariCapabilites = new Dictionary<string, object>
                             {
                                 {"platform", "OS X 10.6"},
-                                {"version", browserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", sauceLabsUsername},
-                                {"accessKey", sauceLabsAccessToken},
+                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
+                                {"username", testSettings.SeleniumHubSettings.HubUsername},
+                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
                                 {
                                     "name",
-                                    "Snow Leopard Safari " + browserVersion.ToString(CultureInfo.InvariantCulture) +
+                                    "Snow Leopard Safari " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) +
                                     " - " + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
                                 },
                                 {"javascriptEnabled", true},
                                 {"acceptSslCerts", true},
-                                {"takesScreenshot", takeScreenshots}
+                                {"takesScreenshot", true}
                             };
                             foreach (var capability in snowLeopardSafariCapabilites)
                             {
@@ -789,17 +787,17 @@ namespace Selenium.Extensions
                             var linuxChromeCapabilites = new Dictionary<string, object>
                             {
                                 {"platform", "Linux"},
-                                {"version", browserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", sauceLabsUsername},
-                                {"accessKey", sauceLabsAccessToken},
+                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
+                                {"username", testSettings.SeleniumHubSettings.HubUsername},
+                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
                                 {
                                     "name",
-                                    "Snow Leopard Chrome " + browserVersion.ToString(CultureInfo.InvariantCulture) +
+                                    "Snow Leopard Chrome " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) +
                                     " - " + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
                                 },
                                 {"javascriptEnabled", true},
                                 {"acceptSslCerts", true},
-                                {"takesScreenshot", takeScreenshots}
+                                {"takesScreenshot", true}
                             };
                             foreach (var capability in linuxChromeCapabilites)
                             {
@@ -813,17 +811,17 @@ namespace Selenium.Extensions
                             var linuxFirefoxCapabilites = new Dictionary<string, object>
                             {
                                 {"platform", "Linux"},
-                                {"version", browserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", sauceLabsUsername},
-                                {"accessKey", sauceLabsAccessToken},
+                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
+                                {"username", testSettings.SeleniumHubSettings.HubUsername},
+                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
                                 {
                                     "name",
-                                    "Snow Leopard Firefox " + browserVersion.ToString(CultureInfo.InvariantCulture) +
+                                    "Snow Leopard Firefox " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) +
                                     " - " + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
                                 },
                                 {"javascriptEnabled", true},
                                 {"acceptSslCerts", true},
-                                {"takesScreenshot", takeScreenshots}
+                                {"takesScreenshot", true}
                             };
                             foreach (var capability in linuxFirefoxCapabilites)
                             {
@@ -837,17 +835,17 @@ namespace Selenium.Extensions
                             var linuxOperaCapabilites = new Dictionary<string, object>
                             {
                                 {"platform", "Linux"},
-                                {"version", browserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", sauceLabsUsername},
-                                {"accessKey", sauceLabsAccessToken},
+                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
+                                {"username", testSettings.SeleniumHubSettings.HubUsername},
+                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
                                 {
                                     "name",
-                                    "Snow Leopard Opera " + browserVersion.ToString(CultureInfo.InvariantCulture) +
+                                    "Snow Leopard Opera " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) +
                                     " - " + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
                                 },
                                 {"javascriptEnabled", true},
                                 {"acceptSslCerts", true},
-                                {"takesScreenshot", takeScreenshots}
+                                {"takesScreenshot", true}
                             };
                             foreach (var capability in linuxOperaCapabilites)
                             {
@@ -858,7 +856,9 @@ namespace Selenium.Extensions
                     }
                     break;
             }
-            return new ScreenshotRemoteWebDriver(new Uri(hubUrl), capabilities, new TimeSpan(0, 0, timeoutSeconds));
+            var driver = new ScreenshotRemoteWebDriver(new Uri(testSettings.SeleniumHubSettings.HubUrl), capabilities, testSettings.TimeoutTimeSpan);
+            var extendedWebDriver = new TestWebDriver(driver, testSettings);
+            return extendedWebDriver;
         }
     }
 }

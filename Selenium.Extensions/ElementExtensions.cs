@@ -482,8 +482,7 @@ namespace Selenium.Extensions
         /// <param name="element">The element.</param>
         /// <param name="elementType">Type of the element.</param>
         /// <returns></returns>
-        public static ReadOnlyCollection<IWebElement> GetElementsOfType(this IWebElement element,
-            ElementType elementType)
+        public static ReadOnlyCollection<IWebElement> GetElementsOfType(this IWebElement element,ElementType elementType)
         {
             switch (elementType)
             {

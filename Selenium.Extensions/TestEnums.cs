@@ -19,7 +19,7 @@ namespace Selenium.Extensions
     ///     The webdriver to use for the test
     /// </summary>
     [Description("Driver")]
-    public enum WebDriver
+    public enum WebDriverType
     {
         [Description("Chrome")] ChromeDriver,
         [Description("Firefox")] FirefoxDriver,

@@ -52,23 +52,32 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ElementExtensions.cs" />
+    <Compile Include="ITestWebDriver.cs" />
+    <Compile Include="ITestWebElement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProxyConfig.cs" />
     <Compile Include="ScreenshotRemoteWebDriver.cs" />
-    <Compile Include="TestBuilder.cs" />
+    <Compile Include="GetWebDriver.cs" />
     <Compile Include="TestEnums.cs" />
     <Compile Include="TestException.cs" />
+    <Compile Include="TestInteractionWrapper.cs" />
+    <Compile Include="TestSearchContext.cs" />
+    <Compile Include="TestWebDriver.cs" />
+    <Compile Include="TestWebElement.cs" />
+    <Compile Include="IRetryAction.cs" />
+    <Compile Include="RetryAction.cs" />
+    <Compile Include="TestSettings.cs" />
     <Compile Include="WaitFor.cs" />
-    <Compile Include="WebDriverExtension.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Test\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>cd $(SolutionDir)
-xcopy /y Selenium.Extensions\bin\debug\*.dll "NuGet\lib\net40"</PostBuildEvent>
+    <PostBuildEvent>xcopy /y C:\Projects\Selenium.Extensions\Selenium.Extensions\bin\Release\*.dll "C:\Projects\Selenium.Extensions\NuGet\lib\net45"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
