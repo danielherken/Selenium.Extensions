@@ -4,24 +4,24 @@ using OpenQA.Selenium.Remote;
 
 namespace Selenium.Extensions
 {
-    public class ScreenshotRemoteWebDriver : RemoteWebDriver, ITakesScreenshot
+    public class TestRemoteWebDriver : RemoteWebDriver, ITakesScreenshot
     {
-        public ScreenshotRemoteWebDriver(ICommandExecutor commandExecutor, ICapabilities desiredCapabilities)
+        public TestRemoteWebDriver(ICommandExecutor commandExecutor, ICapabilities desiredCapabilities)
             : base(commandExecutor, desiredCapabilities)
         {
         }
 
-        public ScreenshotRemoteWebDriver(ICapabilities desiredCapabilities)
+        public TestRemoteWebDriver(ICapabilities desiredCapabilities)
             : base(desiredCapabilities)
         {
         }
 
-        public ScreenshotRemoteWebDriver(Uri remoteAddress, ICapabilities desiredCapabilities)
+        public TestRemoteWebDriver(Uri remoteAddress, ICapabilities desiredCapabilities)
             : base(remoteAddress, desiredCapabilities)
         {
         }
 
-        public ScreenshotRemoteWebDriver(Uri remoteAddress, ICapabilities desiredCapabilities, TimeSpan commandTimeout)
+        public TestRemoteWebDriver(Uri remoteAddress, ICapabilities desiredCapabilities, TimeSpan commandTimeout)
             : base(remoteAddress, desiredCapabilities, commandTimeout)
         {
         }

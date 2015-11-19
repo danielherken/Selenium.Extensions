@@ -42,17 +42,12 @@ namespace Selenium.Extensions
         /// <exception cref="Selenium.Extensions.TestException">The details you specified are invalid</exception>
         public static ITestWebDriver GetInstalledBrowserWebDriver(TestSettings testSettings)
         {
-            if (testSettings.ScreenShotDirectory != null)
-            {
-                if (!Directory.Exists(testSettings.ScreenShotDirectory))
-                {
-                    Directory.CreateDirectory(testSettings.ScreenShotDirectory);
-                }
-            }
+            testSettings = ValidateSavePath(testSettings);
             switch (testSettings.DriverType)
             {
                 case WebDriverType.ChromeDriver:
                     {
+                        testSettings.BrowserName = "Chrome";
                         var driverService = ChromeDriverService.CreateDefaultService(AssemblyDirectory, "chromedriver.exe");
                         var options = new ChromeOptions
                         {
@@ -79,6 +74,7 @@ namespace Selenium.Extensions
                     }
                 case WebDriverType.FirefoxDriver:
                     {
+                        testSettings.BrowserName = "Firefox";
                         var driverService = FirefoxDriverService.CreateDefaultService();
                         var options = new FirefoxOptions();
                         var driver = new FirefoxDriver(driverService, options,testSettings.TimeoutTimeSpan);
@@ -96,6 +92,7 @@ namespace Selenium.Extensions
                     }
                 case WebDriverType.InternetExplorerDriver:
                     {
+                        testSettings.BrowserName = "IE";
                         var driverName = "IEDriverServer.exe";
                         if (Environment.Is64BitProcess)
                         {
@@ -128,6 +125,7 @@ namespace Selenium.Extensions
                     }
                 case WebDriverType.EdgeDriver:
                     {
+                        testSettings.BrowserName = "Edge";
                         var driverService = EdgeDriverService.CreateDefaultService(AssemblyDirectory,
                             "MicrosoftWebDriver.exe");
                         var options = new EdgeOptions
@@ -149,6 +147,7 @@ namespace Selenium.Extensions
                     }
                 case WebDriverType.OperaDriver:
                     {
+                        testSettings.BrowserName = "Opera";
                         var driverService = OperaDriverService.CreateDefaultService();
                         var options = new OperaOptions
                         {
@@ -169,6 +168,7 @@ namespace Selenium.Extensions
                     }
                 case WebDriverType.SafariDriver:
                     {
+                        testSettings.BrowserName = "Safari";
                         var options = new SafariOptions();
                         var driver = new SafariDriver(options);
                         if (testSettings.DeleteAllCookies)
@@ -191,16 +191,19 @@ namespace Selenium.Extensions
         /// Gets the web driver for standalone browsers.
         /// </summary>
         /// <param name="testSettings">The test settings.</param>
+        /// <param name="browserVersion">The browser version.</param>
         /// <returns></returns>
-        public static ITestWebDriver GetStandaloneWebDriver(TestSettings testSettings)
+        public static ITestWebDriver GetStandaloneWebDriver(TestSettings testSettings, decimal browserVersion)
         {
+            testSettings = ValidateSavePath(testSettings);
             switch (testSettings.DriverType)
             {
                 case WebDriverType.ChromeDriver:
                 {
+                    testSettings.BrowserName = "Chrome " + browserVersion;
                     var multiBrowserExe =
                         Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                        "\\MultiBrowser\\MB_Chrome" + testSettings.BrowserVersion + ".exe";
+                        "\\MultiBrowser\\MB_Chrome" + browserVersion + ".exe";
                     var driverService = ChromeDriverService.CreateDefaultService(AssemblyDirectory, "chromedriver.exe");
                     var options = new ChromeOptions
                     {
@@ -228,9 +231,10 @@ namespace Selenium.Extensions
                     }
                 case WebDriverType.FirefoxDriver:
                 {
-                    var multiBrowserExe =
+                        testSettings.BrowserName = "Firefox " + browserVersion;
+                        var multiBrowserExe =
                         Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                        "\\MultiBrowser\\MB_Chrome" + testSettings.BrowserVersion + ".exe";
+                        "\\MultiBrowser\\MB_Chrome" + browserVersion + ".exe";
                     var driverService = FirefoxDriverService.CreateDefaultService();
                     driverService.FirefoxBinaryPath = multiBrowserExe;
                     var options = new FirefoxOptions();
@@ -249,7 +253,8 @@ namespace Selenium.Extensions
                     }
                 case WebDriverType.InternetExplorerDriver:
                 {
-                    var driverName = "IEDriverServer.exe";
+                        testSettings.BrowserName = "IE " + browserVersion;
+                        var driverName = "IEDriverServer.exe";
                     if (Environment.Is64BitProcess)
                     {
                         driverName = "IEDriverServer64.exe";
@@ -281,7 +286,8 @@ namespace Selenium.Extensions
                     }
                 case WebDriverType.EdgeDriver:
                 {
-                    var driverService = EdgeDriverService.CreateDefaultService(AssemblyDirectory,
+                        testSettings.BrowserName = "Edge " + browserVersion;
+                        var driverService = EdgeDriverService.CreateDefaultService(AssemblyDirectory,
                         "MicrosoftWebDriver.exe");
                     var options = new EdgeOptions
                     {
@@ -302,9 +308,10 @@ namespace Selenium.Extensions
                     }
                 case WebDriverType.OperaDriver:
                 {
-                    var multiBrowserExe =
+                        testSettings.BrowserName = "Opera " + browserVersion;
+                        var multiBrowserExe =
                         Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                        "\\MultiBrowser\\MB_Chrome" + testSettings.BrowserVersion + ".exe";
+                        "\\MultiBrowser\\MB_Chrome" + browserVersion + ".exe";
                     var driverService = OperaDriverService.CreateDefaultService();
                     var options = new OperaOptions
                     {
@@ -326,9 +333,10 @@ namespace Selenium.Extensions
                     }
                 case WebDriverType.SafariDriver:
                 {
-                    var multiBrowserExe =
+                        testSettings.BrowserName = "Firefox " + browserVersion;
+                        var multiBrowserExe =
                         Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                        "\\MultiBrowser\\MB_Chrome" + testSettings.BrowserVersion + ".exe";
+                        "\\MultiBrowser\\MB_Chrome" + browserVersion + ".exe";
                     var options = new SafariOptions
                     {
                         SafariLocation = multiBrowserExe
@@ -355,9 +363,12 @@ namespace Selenium.Extensions
         /// </summary>
         /// <param name="testSettings">The test settings.</param>
         /// <param name="emulator">The emulator.</param>
+        /// <param name="orientation">The device orientation.</param>
         /// <returns></returns>
-        public static ITestWebDriver GetMultiBrowserEmulatorWebDriver(TestSettings testSettings, Emulator emulator)
+        public static ITestWebDriver GetMultiBrowserEmulatorWebDriver(TestSettings testSettings, Emulator emulator, DeviceOrientation orientation)
         {
+            testSettings.BrowserName = emulator + " " + orientation;
+            testSettings = ValidateSavePath(testSettings);
             var driverService = ChromeDriverService.CreateDefaultService(AssemblyDirectory, "chromedriver.exe");
             var currentInstallPath = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\MultiBrowser", false) ??
                                      Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Wow6432node\MultiBrowser",
@@ -393,472 +404,83 @@ namespace Selenium.Extensions
         /// <summary>
         /// Gets the sauce labs web driver.
         /// </summary>
+        /// <param name="browserName">The full browser name.</param>
+        /// <param name="os">The operating system.</param>
+        /// <param name="apiName">The api name.</param>
+        /// <param name="device">The device name.</param>
+        /// <param name="version">The version name.</param>
         /// <param name="testSettings">The test settings.</param>
-        /// <param name="browserVendor">The browser vendor.</param>
-        /// <param name="cloudBrowserName">Name of the cloud browser.</param>
+        /// <param name="deviceOrientation">The device orientation.</param>
         /// <returns></returns>
-        public static ITestWebDriver GetSauceLabsWebDriver(TestSettings testSettings, CloudBrowserVendor browserVendor, CloudBrowserName cloudBrowserName)
+        /// <exception cref="TestException">Selenium settings not set.</exception>
+        public static ITestWebDriver GetSauceLabsWebDriver(string browserName, string os, string apiName, string device, string version, TestSettings testSettings, DeviceOrientation deviceOrientation)
         {
-            var capabilities = new DesiredCapabilities();
-            switch (browserVendor)
+            testSettings.BrowserName = browserName;
+            if (testSettings.SeleniumHubSettings == null)
             {
-                case CloudBrowserVendor.iPad:
-                    capabilities = DesiredCapabilities.IPad();
-                    var iPadCapabilites = new Dictionary<string, object>
-                    {
-                        {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
-                        {"username", testSettings.SeleniumHubSettings.HubUsername},
-                        {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
-                        {
-                            "name",
-                            "iPad " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) + " - " +
-                            DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
-                        },
-                        {"javascriptEnabled", true},
-                        {"acceptSslCerts", true},
-                        {"takesScreenshot", true},
-                        {"device-orientation", "portrait"}
-                    };
-                    foreach (var capability in iPadCapabilites)
-                    {
-                        capabilities.SetCapability(capability.Key, capability.Value);
-                    }
-                    break;
-                case CloudBrowserVendor.iPhone:
-                    capabilities = DesiredCapabilities.IPhone();
-                    var iPhoneCapabilites = new Dictionary<string, object>
-                    {
-                        {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
-                        {"username", testSettings.SeleniumHubSettings.HubUsername},
-                        {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
-                        {
-                            "name",
-                            "iPhone " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) + " - " +
-                            DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
-                        },
-                        {"javascriptEnabled", true},
-                        {"acceptSslCerts", true},
-                        {"takesScreenshot", true},
-                        {"device-orientation", "portrait"}
-                    };
-                    foreach (var capability in iPhoneCapabilites)
-                    {
-                        capabilities.SetCapability(capability.Key, capability.Value);
-                    }
-                    break;
-                case CloudBrowserVendor.Android:
-                    capabilities = DesiredCapabilities.Android();
-                    var androidCapabilites = new Dictionary<string, object>
-                    {
-                        {"platform", "Linux"},
-                        {"deviceName", "Android Emulator"},
-                        {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
-                        {"username", testSettings.SeleniumHubSettings.HubUsername},
-                        {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
-                        {
-                            "name",
-                            "Android Emulator - " + DateTime.Now.ToShortDateString() + " " +
-                            DateTime.Now.ToLongTimeString()
-                        },
-                        {"javascriptEnabled", true},
-                        {"acceptSslCerts", true},
-                        {"takesScreenshot", true},
-                        {"device-orientation", "portrait"}
-                    };
-                    foreach (var capability in androidCapabilites)
-                    {
-                        capabilities.SetCapability(capability.Key, capability.Value);
-                    }
-                    break;
-                case CloudBrowserVendor.Yosemite:
-                    switch (cloudBrowserName)
-                    {
-                        case CloudBrowserName.Chrome:
-                        {
-                            capabilities = DesiredCapabilities.Chrome();
-                            var yosemiteChromeCapabilites = new Dictionary<string, object>
-                            {
-                                {"platform", "OS X 10.10"},
-                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", testSettings.SeleniumHubSettings.HubUsername},
-                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
-                                {
-                                    "name",
-                                    "Yosemite Chrome " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) + " - " +
-                                    DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
-                                },
-                                {"javascriptEnabled", true},
-                                {"acceptSslCerts", true},
-                                {"takesScreenshot", true}
-                            };
-                            foreach (var capability in yosemiteChromeCapabilites)
-                            {
-                                capabilities.SetCapability(capability.Key, capability.Value);
-                            }
-                        }
-                            break;
-                        case CloudBrowserName.Firefox:
-                        {
-                            capabilities = DesiredCapabilities.Firefox();
-                            var yosemiteFirefoxCapabilites = new Dictionary<string, object>
-                            {
-                                {"platform", "OS X 10.10"},
-                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", testSettings.SeleniumHubSettings.HubUsername},
-                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
-                                {
-                                    "name",
-                                    "Yosemite Firefox " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) + " - " +
-                                    DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
-                                },
-                                {"javascriptEnabled", true},
-                                {"acceptSslCerts", true},
-                                {"takesScreenshot", true}
-                            };
-                            foreach (var capability in yosemiteFirefoxCapabilites)
-                            {
-                                capabilities.SetCapability(capability.Key, capability.Value);
-                            }
-                        }
-                            break;
-                        case CloudBrowserName.Safari:
-                        {
-                            capabilities = DesiredCapabilities.Safari();
-                            var yosemiteSafariCapabilites = new Dictionary<string, object>
-                            {
-                                {"platform", "OS X 10.10"},
-                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", testSettings.SeleniumHubSettings.HubUsername},
-                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
-                                {
-                                    "name",
-                                    "Yosemite Safari " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) + " - " +
-                                    DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
-                                },
-                                {"javascriptEnabled", true},
-                                {"acceptSslCerts", true},
-                                {"takesScreenshot", true}
-                            };
-                            foreach (var capability in yosemiteSafariCapabilites)
-                            {
-                                capabilities.SetCapability(capability.Key, capability.Value);
-                            }
-                        }
-                            break;
-                    }
-                    break;
-                case CloudBrowserVendor.Mavericks:
-                    switch (cloudBrowserName)
-                    {
-                        case CloudBrowserName.Chrome:
-                        {
-                            capabilities = DesiredCapabilities.Chrome();
-                            var maveriksChromeCapabilites = new Dictionary<string, object>
-                            {
-                                {"platform", "OS X 10.9"},
-                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", testSettings.SeleniumHubSettings.HubUsername},
-                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
-                                {
-                                    "name",
-                                    "Mavericks Chrome " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) + " - " +
-                                    DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
-                                },
-                                {"javascriptEnabled", true},
-                                {"acceptSslCerts", true},
-                                {"takesScreenshot", true}
-                            };
-                            foreach (var capability in maveriksChromeCapabilites)
-                            {
-                                capabilities.SetCapability(capability.Key, capability.Value);
-                            }
-                        }
-                            break;
-                        case CloudBrowserName.Firefox:
-                        {
-                            capabilities = DesiredCapabilities.Firefox();
-                            var maveriksFirefoxCapabilites = new Dictionary<string, object>
-                            {
-                                {"platform", "OS X 10.9"},
-                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", testSettings.SeleniumHubSettings.HubUsername},
-                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
-                                {
-                                    "name",
-                                    "Mavericks Firefox " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) + " - " +
-                                    DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
-                                },
-                                {"javascriptEnabled", true},
-                                {"acceptSslCerts", true},
-                                {"takesScreenshot", true}
-                            };
-                            foreach (var capability in maveriksFirefoxCapabilites)
-                            {
-                                capabilities.SetCapability(capability.Key, capability.Value);
-                            }
-                        }
-                            break;
-                        case CloudBrowserName.Safari:
-                        {
-                            capabilities = DesiredCapabilities.Safari();
-                            var maveriksSafariCapabilites = new Dictionary<string, object>
-                            {
-                                {"platform", "OS X 10.9"},
-                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", testSettings.SeleniumHubSettings.HubUsername},
-                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
-                                {
-                                    "name",
-                                    "Mavericks Safari " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) + " - " +
-                                    DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
-                                },
-                                {"javascriptEnabled", true},
-                                {"acceptSslCerts", true},
-                                {"takesScreenshot", true}
-                            };
-                            foreach (var capability in maveriksSafariCapabilites)
-                            {
-                                capabilities.SetCapability(capability.Key, capability.Value);
-                            }
-                        }
-                            break;
-                    }
-                    break;
-                case CloudBrowserVendor.MountainLion:
-                    switch (cloudBrowserName)
-                    {
-                        case CloudBrowserName.Chrome:
-                        {
-                            capabilities = DesiredCapabilities.Chrome();
-                            var mountainLionChromeCapabilites = new Dictionary<string, object>
-                            {
-                                {"platform", "OS X 10.8"},
-                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", testSettings.SeleniumHubSettings.HubUsername},
-                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
-                                {
-                                    "name",
-                                    "Mountain Lion Chrome " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) +
-                                    " - " + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
-                                },
-                                {"javascriptEnabled", true},
-                                {"acceptSslCerts", true},
-                                {"takesScreenshot", true}
-                            };
-                            foreach (var capability in mountainLionChromeCapabilites)
-                            {
-                                capabilities.SetCapability(capability.Key, capability.Value);
-                            }
-                        }
-                            break;
-                        case CloudBrowserName.Firefox:
-                        {
-                            capabilities = DesiredCapabilities.Firefox();
-                            var mountainLionFirefoxCapabilites = new Dictionary<string, object>
-                            {
-                                {"platform", "OS X 10.8"},
-                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", testSettings.SeleniumHubSettings.HubUsername},
-                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
-                                {
-                                    "name",
-                                    "Mountain Lion Firefox " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) +
-                                    " - " + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
-                                },
-                                {"javascriptEnabled", true},
-                                {"acceptSslCerts", true},
-                                {"takesScreenshot", true}
-                            };
-                            foreach (var capability in mountainLionFirefoxCapabilites)
-                            {
-                                capabilities.SetCapability(capability.Key, capability.Value);
-                            }
-                        }
-                            break;
-                        case CloudBrowserName.Safari:
-                        {
-                            capabilities = DesiredCapabilities.Safari();
-                            var mountainLionSafariCapabilites = new Dictionary<string, object>
-                            {
-                                {"platform", "OS X 10.8"},
-                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", testSettings.SeleniumHubSettings.HubUsername},
-                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
-                                {
-                                    "name",
-                                    "Mountain Lion Safari " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) +
-                                    " - " + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
-                                },
-                                {"javascriptEnabled", true},
-                                {"acceptSslCerts", true},
-                                {"takesScreenshot", true}
-                            };
-                            foreach (var capability in mountainLionSafariCapabilites)
-                            {
-                                capabilities.SetCapability(capability.Key, capability.Value);
-                            }
-                        }
-                            break;
-                    }
-                    break;
-                case CloudBrowserVendor.SnowLeopard:
-                    switch (cloudBrowserName)
-                    {
-                        case CloudBrowserName.Chrome:
-                        {
-                            capabilities = DesiredCapabilities.Chrome();
-                            var snowLeopardChromeCapabilites = new Dictionary<string, object>
-                            {
-                                {"platform", "OS X 10.6"},
-                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", testSettings.SeleniumHubSettings.HubUsername},
-                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
-                                {
-                                    "name",
-                                    "Snow Leopard Chrome " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) +
-                                    " - " + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
-                                },
-                                {"javascriptEnabled", true},
-                                {"acceptSslCerts", true},
-                                {"takesScreenshot", true}
-                            };
-                            foreach (var capability in snowLeopardChromeCapabilites)
-                            {
-                                capabilities.SetCapability(capability.Key, capability.Value);
-                            }
-                        }
-                            break;
-                        case CloudBrowserName.Firefox:
-                        {
-                            capabilities = DesiredCapabilities.Firefox();
-                            var snowLeopardFirefoxCapabilites = new Dictionary<string, object>
-                            {
-                                {"platform", "OS X 10.6"},
-                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", testSettings.SeleniumHubSettings.HubUsername},
-                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
-                                {
-                                    "name",
-                                    "Snow Leopard Firefox " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) +
-                                    " - " + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
-                                },
-                                {"javascriptEnabled", true},
-                                {"acceptSslCerts", true},
-                                {"takesScreenshot", true}
-                            };
-                            foreach (var capability in snowLeopardFirefoxCapabilites)
-                            {
-                                capabilities.SetCapability(capability.Key, capability.Value);
-                            }
-                        }
-                            break;
-                        case CloudBrowserName.Safari:
-                        {
-                            capabilities = DesiredCapabilities.Safari();
-                            var snowLeopardSafariCapabilites = new Dictionary<string, object>
-                            {
-                                {"platform", "OS X 10.6"},
-                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", testSettings.SeleniumHubSettings.HubUsername},
-                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
-                                {
-                                    "name",
-                                    "Snow Leopard Safari " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) +
-                                    " - " + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
-                                },
-                                {"javascriptEnabled", true},
-                                {"acceptSslCerts", true},
-                                {"takesScreenshot", true}
-                            };
-                            foreach (var capability in snowLeopardSafariCapabilites)
-                            {
-                                capabilities.SetCapability(capability.Key, capability.Value);
-                            }
-                        }
-                            break;
-                    }
-                    break;
-                case CloudBrowserVendor.Linux:
-                    switch (cloudBrowserName)
-                    {
-                        case CloudBrowserName.Chrome:
-                        {
-                            capabilities = DesiredCapabilities.Chrome();
-                            var linuxChromeCapabilites = new Dictionary<string, object>
-                            {
-                                {"platform", "Linux"},
-                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", testSettings.SeleniumHubSettings.HubUsername},
-                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
-                                {
-                                    "name",
-                                    "Snow Leopard Chrome " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) +
-                                    " - " + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
-                                },
-                                {"javascriptEnabled", true},
-                                {"acceptSslCerts", true},
-                                {"takesScreenshot", true}
-                            };
-                            foreach (var capability in linuxChromeCapabilites)
-                            {
-                                capabilities.SetCapability(capability.Key, capability.Value);
-                            }
-                        }
-                            break;
-                        case CloudBrowserName.Firefox:
-                        {
-                            capabilities = DesiredCapabilities.Firefox();
-                            var linuxFirefoxCapabilites = new Dictionary<string, object>
-                            {
-                                {"platform", "Linux"},
-                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", testSettings.SeleniumHubSettings.HubUsername},
-                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
-                                {
-                                    "name",
-                                    "Snow Leopard Firefox " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) +
-                                    " - " + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
-                                },
-                                {"javascriptEnabled", true},
-                                {"acceptSslCerts", true},
-                                {"takesScreenshot", true}
-                            };
-                            foreach (var capability in linuxFirefoxCapabilites)
-                            {
-                                capabilities.SetCapability(capability.Key, capability.Value);
-                            }
-                        }
-                            break;
-                        case CloudBrowserName.Opera:
-                        {
-                            capabilities = DesiredCapabilities.Opera();
-                            var linuxOperaCapabilites = new Dictionary<string, object>
-                            {
-                                {"platform", "Linux"},
-                                {"version", testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture)},
-                                {"username", testSettings.SeleniumHubSettings.HubUsername},
-                                {"accessKey", testSettings.SeleniumHubSettings.HubPassword},
-                                {
-                                    "name",
-                                    "Snow Leopard Opera " + testSettings.BrowserVersion.ToString(CultureInfo.InvariantCulture) +
-                                    " - " + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString()
-                                },
-                                {"javascriptEnabled", true},
-                                {"acceptSslCerts", true},
-                                {"takesScreenshot", true}
-                            };
-                            foreach (var capability in linuxOperaCapabilites)
-                            {
-                                capabilities.SetCapability(capability.Key, capability.Value);
-                            }
-                        }
-                            break;
-                    }
-                    break;
+                throw new TestException("SauceLabs settings not set.");
             }
-            var driver = new ScreenshotRemoteWebDriver(new Uri(testSettings.SeleniumHubSettings.HubUrl), capabilities, testSettings.TimeoutTimeSpan);
+            if (testSettings.SeleniumHubSettings.HubUsername == null)
+            {
+                throw new TestException("SauceLabs username settings not set.");
+            }
+            if (testSettings.SeleniumHubSettings.HubPassword == null)
+            {
+                throw new TestException("SauceLabs access token settings not set.");
+            }
+            var capabilities = SauceLabs.GetDesiredCapability(testSettings.SeleniumHubSettings.HubUsername,testSettings.SeleniumHubSettings.HubPassword, browserName, os, apiName, device, version, deviceOrientation, testSettings);
+            testSettings = ValidateSavePath(testSettings);
+
+            var driver = new TestRemoteWebDriver(new Uri(testSettings.SeleniumHubSettings.HubUrl), capabilities, testSettings.TimeoutTimeSpan);
             var extendedWebDriver = new TestWebDriver(driver, testSettings);
             return extendedWebDriver;
+        }
+
+        /// <summary>
+        /// Validates the save path.
+        /// </summary>
+        /// <param name="testSettings">The test settings.</param>
+        /// <returns></returns>
+        private static TestSettings ValidateSavePath(TestSettings testSettings)
+        {
+            if (testSettings.LogScreenShots || testSettings.LogEvents)
+            {
+                if (!string.IsNullOrEmpty(testSettings.TestDirectory))
+                {
+                    if (!testSettings.TestDirectory.EndsWith("\\"))
+                    {
+                        testSettings.TestDirectory = testSettings.TestDirectory + "\\";
+                    }
+                    try
+                    {
+                        var path = Path.GetFullPath(testSettings.TestDirectory);
+                        if (!Directory.Exists(testSettings.TestDirectory))
+                        {
+                            Directory.CreateDirectory(testSettings.TestDirectory);
+                        }
+                        if (testSettings.LogScreenShots)
+                        {
+                            if (!Directory.Exists(testSettings.TestDirectory = "ScreenShots"))
+                            {
+                                Directory.CreateDirectory(testSettings.TestDirectory = "ScreenShots");
+                            }
+                        }
+                        if (testSettings.LogEvents)
+                        {
+                            if (!Directory.Exists(testSettings.TestDirectory = "Logs"))
+                            {
+                                Directory.CreateDirectory(testSettings.TestDirectory = "Logs");
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        testSettings.TestDirectory = "";
+                    }
+
+                }
+            }
+            return testSettings;
         }
     }
 }

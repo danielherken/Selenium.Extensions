@@ -42,6 +42,7 @@ namespace Selenium.Extensions
         string GetCssValue(string propertyName);
         Screenshot GetScreenshot();
         void SendKeys(string text);
+        void SetText(string text);
         void Submit();
         IWebDriver GetDriver();
         IJavaScriptExecutor GetJavascriptExecutor();
@@ -67,6 +68,9 @@ namespace Selenium.Extensions
         void RightClick();
         void ClickAndHold();
         void DragAndDrop(IWebElement targetElement);
+        void SelectFromDropDownByText(string text);
+        void SelectFromDropDownByIndex(int index);
+        void SelectFromDropDownByValue(string value);
 
 
     }

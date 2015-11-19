@@ -52,11 +52,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SauceLabsCredentials.cs" />
+    <Compile Include="FullScreenShot.cs" />
     <Compile Include="ITestWebDriver.cs" />
     <Compile Include="ITestWebElement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProxyConfig.cs" />
-    <Compile Include="ScreenshotRemoteWebDriver.cs" />
+    <Compile Include="SauceLabs.cs" />
+    <Compile Include="TestRemoteWebDriver.cs" />
     <Compile Include="GetWebDriver.cs" />
     <Compile Include="TestEnums.cs" />
     <Compile Include="TestException.cs" />

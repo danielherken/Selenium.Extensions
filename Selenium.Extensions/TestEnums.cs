@@ -10,7 +10,7 @@ namespace Selenium.Extensions
     {
         [Description("Standalone Browser")] StandaloneBrowser,
         [Description("Installed Browser")] InstalledBrowser,
-        [Description("Cloud Browser")] CloudBrowser,
+        [Description("SauceLabs Browsers")] SauceLabsBrowsers,
         [Description("Emulator Browser")] EmulatorBrowser,
         [Description("Android Browser")] AndroidBrowser
     }
@@ -48,27 +48,6 @@ namespace Selenium.Extensions
     //    PhantomJs
     //}
 
-    [Description("Vendor")]
-    public enum CloudBrowserVendor
-    {
-        [Description("Apple iPad")] iPad,
-        [Description("Apple iPhone")] iPhone,
-        [Description("Google Android")] Android,
-        [Description("Apple Yosemite")] Yosemite,
-        [Description("Apple Mavericks")] Mavericks,
-        [Description("Apple Mountain Lion")] MountainLion,
-        [Description("Apple Snow Leopard")] SnowLeopard,
-        [Description("Linux")] Linux
-    }
-
-    [Description("Browser Name")]
-    public enum CloudBrowserName
-    {
-        [Description("Chrome")] Chrome,
-        [Description("Firefox")] Firefox,
-        [Description("Safari")] Safari,
-        [Description("Opera")] Opera
-    }
 
     [Description("Orientation")]
     public enum DeviceOrientation
@@ -126,5 +105,21 @@ namespace Selenium.Extensions
         Time,
         Url,
         Week
+    }
+
+    public enum AlertAction
+    {
+        Accept,
+        Dismiss,
+        SendKeys,
+        SetCredentials
+
+    }
+
+    public enum LogLevel
+    {
+        Errors,
+        Verbose,
+        None
     }
 }

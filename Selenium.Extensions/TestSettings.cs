@@ -1,10 +1,21 @@
 using System;
+using OpenQA.Selenium.Remote;
 
 namespace Selenium.Extensions
 {
 
+    /// <summary>
+    /// The test settings for the test
+    /// </summary>
     public class TestSettings
     {
+        /// <summary>
+        /// Gets or sets the test type.
+        /// </summary>
+        /// <value>
+        /// The type of test.
+        /// </value>
+        public TestType TestType { get; set; }
 
         /// <summary>
         /// Gets or sets the test URI.
@@ -44,20 +55,54 @@ namespace Selenium.Extensions
         public bool MaximiseBrowser { get; set; }
 
         /// <summary>
-        /// Gets or sets the screen shot directory.
+        /// Gets or sets the directory to save logs and screen shots to.
         /// </summary>
         /// <value>
-        /// The screen shot directory.
+        /// The test directory.
         /// </value>
-        public string ScreenShotDirectory { get; set; }
+        public string TestDirectory { get; set; }
 
         /// <summary>
-        /// Gets or sets the browser version.
+        /// Gets or sets a value indicating whether to take screen shots.
         /// </summary>
         /// <value>
-        /// The browser version.
+        ///   <c>true</c> if the test takes screen shots; otherwise, <c>false</c>.
         /// </value>
-        public int BrowserVersion { get; set; }
+        public bool LogScreenShots { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to create a test log].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the test should create a log, otherwise <c>false</c>.
+        /// </value>
+        public bool LogEvents { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the browser.
+        /// </summary>
+        /// <value>
+        /// The name of the browser.
+        /// </value>
+        public string BrowserName { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether to highlight elements.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the test should highlight the active elements; otherwise, <c>false</c>.
+        /// </value>
+        public bool HighlightElements { get; set; }
+
+        public bool CapturePerformance { get; set; }
+
+        /// <summary>
+        /// Gets or sets the log level.
+        /// </summary>
+        /// <value>
+        /// The log level.
+        /// </value>
+        public LogLevel LogLevel { get; set; }
 
 
         /// <summary>
@@ -73,17 +118,32 @@ namespace Selenium.Extensions
         /// </value>
         public HubSettings SeleniumHubSettings { get; set; }
 
+        /// <summary>
+        /// Gets or sets the default test settings.
+        /// </summary>
+        /// <value>
+        /// The default test settings.
+        /// </value>
         public static TestSettings Default => new TestSettings
         {
             SamePageOriginStrictness = PageOriginStrictness.AllowNonMatchingAnchorHashes,
+            TestType = TestType.InstalledBrowser,
             TestUri = new Uri("https://www.google.com"),
             DriverType = WebDriverType.ChromeDriver,
             TimeoutTimeSpan = TimeSpan.FromSeconds(30),
             DeleteAllCookies = true,
             MaximiseBrowser = true,
-            ScreenShotDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+            LogScreenShots = true,
+            LogEvents = false,
+            LogLevel = LogLevel.None,
+            HighlightElements = false,
+            TestDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+
         };
 
+        /// <summary>
+        /// Gets the Page Origin strictness rule
+        /// </summary>
         public enum PageOriginStrictness
         {
             /// <summary>
@@ -111,6 +171,9 @@ namespace Selenium.Extensions
         }
     }
 
+    /// <summary>
+    /// The hub settings for cloud testing
+    /// </summary>
     public class HubSettings
     {
         /// <summary>
@@ -136,5 +199,7 @@ namespace Selenium.Extensions
         /// The hub password.
         /// </value>
         public string HubPassword { get; set; }
+
     }
+
 }

@@ -51,5 +51,11 @@ namespace Selenium.Extensions
         IWebElement WaitTillElementIsVisible(By locator, TimeSpan timeSpan);
         IWebElement SelectElementByAttribute(By locator, string attribute, string value);
         IReadOnlyCollection<IWebElement> SelectElementsByAttribute(By locator, string attribute, string value);
+
+        void SwitchToAlert(AlertAction alertAction);
+        void SwitchToPrompt(AlertAction alertAction,string promptValue);
+        void SwitchToWindow(string windowTitle);
+        void ClosePopUpWindow();
+        void TakeAndSaveScreenShot();
     }
 }

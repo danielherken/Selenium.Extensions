@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using OpenQA.Selenium;
@@ -13,6 +14,7 @@ namespace Selenium.Extensions
     {
         private readonly TestSearchContext _context;
         private readonly IWebDriver _driver;
+        private string _mainWindowHandle;
 
         public TestWebDriver(IWebDriver driver) : this(driver, TestSettings.Default)
         {
@@ -605,6 +607,87 @@ namespace Selenium.Extensions
         {
             return (IReadOnlyCollection<IWebElement>) _driver.FindElements(locator)
                 .Where(d => d.GetAttribute(attribute) == value);
+        }
+
+        public void SwitchToAlert(AlertAction alertAction)
+        {
+            var alert = _driver.SwitchTo().Alert();
+            switch (alertAction)
+            {
+                case AlertAction.Accept:
+                    alert.Accept();
+                    break;
+                case AlertAction.Dismiss:
+                    alert.Dismiss();
+                    break;
+            }
+        }
+
+        public void SwitchToPrompt(AlertAction alertAction, string promptValue)
+        {
+            var alert = _driver.SwitchTo().Alert();
+            switch (alertAction)
+            {
+                case AlertAction.Accept:
+                    alert.SendKeys(promptValue);
+                    alert.Accept();
+                    break;
+                case AlertAction.Dismiss:
+                    alert.Dismiss();
+                    break;
+            }
+        }
+
+        public void SwitchToWindow(string windowTitle)
+        {
+            var windowHandles = _driver.WindowHandles;
+            _mainWindowHandle = _driver.CurrentWindowHandle;
+            foreach (string handle in windowHandles.Where(handle => handle != _mainWindowHandle))
+            {
+                if (_driver.SwitchTo().Window(handle).Title != windowTitle)
+                {
+                    _driver.SwitchTo().Window(_mainWindowHandle);
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
+        public void ClosePopUpWindow()
+        {
+            _driver.Close();
+            if (!string.IsNullOrEmpty(_mainWindowHandle))
+            {
+                _driver.SwitchTo().Window(_mainWindowHandle);
+            }
+            else
+            {
+                _driver.SwitchTo().DefaultContent();
+            }
+            
+        }
+
+        public void TakeAndSaveScreenShot()
+        {
+            if (string.IsNullOrEmpty(Settings.TestDirectory) ||
+                !Directory.Exists(Settings.TestDirectory))
+            {
+                throw new TestException("You have not set a valid directory to save screenshots in. Please set a valid directory first");
+            }
+            if (Settings.DriverType == WebDriverType.ChromeDriver || Settings.DriverType == WebDriverType.SafariDriver)
+            {
+                var screenshot = FullScreenShot.GetFullScreenShot(this, Settings);
+
+            }
+            else
+            {
+                var screenshot = GetScreenshot();
+            }
+            
+            
+
         }
 
         public string Url
