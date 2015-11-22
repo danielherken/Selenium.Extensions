@@ -4,10 +4,10 @@ using OpenQA.Selenium.Support.UI;
 
 namespace Selenium.Extensions
 {
-    public static class WaitFor
+    public static class WaitUntil
     {
         /// <summary>
-        ///     Waits for the element to be present present with a specified time.
+        ///     Waits for the element to be present present with a optional time.
         /// </summary>
         /// <param name="browser">The browser.</param>
         /// <param name="locator">The locator.</param>
@@ -18,16 +18,16 @@ namespace Selenium.Extensions
             {
                 timeSpan = TimeSpan.FromSeconds(10);
             }
-            Wait(browser, locator, (TimeSpan) timeSpan);
+            WaitForElement(browser, locator, (TimeSpan) timeSpan);
         }
 
         /// <summary>
-        /// Waits the specified browser.
+        /// Waits for the element to be presentr.
         /// </summary>
         /// <param name="browser">The browser.</param>
         /// <param name="locator">The locator.</param>
         /// <param name="timespan">The timespan.</param>
-        private static void Wait(IWebDriver browser, By locator, TimeSpan timespan)
+        private static void WaitForElement(IWebDriver browser, By locator, TimeSpan timespan)
         {
             IWait<IWebDriver> wait = new WebDriverWait(browser, timespan);
             wait.Until(d => d.FindElement(locator));

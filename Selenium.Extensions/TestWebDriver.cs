@@ -2,29 +2,39 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.Events;
 using OpenQA.Selenium.Support.UI;
+using Selenium.Extensions.Exceptions;
+using Selenium.Extensions.Interfaces;
+using Xunit.Abstractions;
+using NoSuchElementException = OpenQA.Selenium.NoSuchElementException;
 
 namespace Selenium.Extensions
 {
-    public class TestWebDriver : IWebDriver, IJavaScriptExecutor, ITakesScreenshot, IHasInputDevices, IHasCapabilities, IAllowsFileDetection, ITestWebDriver
+    public class TestWebDriver : IWebDriver, IJavaScriptExecutor, ITakesScreenshot, IHasInputDevices, IHasCapabilities, IAllowsFileDetection, ITestOutputHelper, ITestWebDriver
     {
         private readonly TestSearchContext _context;
         private readonly IWebDriver _driver;
         private string _mainWindowHandle;
+        private IHighlighter _highlighter;
+        private ILogger _logger;
+        private readonly ITestOutputHelper _testOutputHelper;
+        private IDialogManager _dialogManager;
 
-        public TestWebDriver(IWebDriver driver) : this(driver, TestSettings.Default)
-        {
-        }
 
-        public TestWebDriver(IWebDriver driver, TestSettings settings)
+        public TestWebDriver(IWebDriver driver, TestSettings settings, ITestOutputHelper testOutputHelper)
         {
             _driver = driver;
             Settings = settings;
             _context = new TestSearchContext(Settings, null, _driver, null);
+            _testOutputHelper = testOutputHelper;
         }
 
         public TestSettings Settings { get; }
@@ -35,14 +45,29 @@ namespace Selenium.Extensions
             set { ((IAllowsFileDetection) _driver).FileDetector = value; }
         }
 
+        private IHighlighter Highlighter => _highlighter ?? (_highlighter = new WebDriverHighlighter(this));
+
+        private ILogger Logger => _logger ?? (_logger = new WebDriverLogger(this, _testOutputHelper));
+
+        private IDialogManager DialogManager => _dialogManager ?? (_dialogManager = new DialogManager());
+
         public ICapabilities Capabilities => ((IHasCapabilities) _driver).Capabilities;
 
         public IKeyboard Keyboard => ((IHasInputDevices) _driver).Keyboard;
 
         public IMouse Mouse => ((IHasInputDevices) _driver).Mouse;
 
+        public IWebElement PreviousElement { get; set; }
+
+        public IWebElement CurrentElement { get; set; }
+
         public object ExecuteScript(string script, params object[] args)
         {
+            //return FuncInvoker.Instance.InvokeMethod<object>(() => {
+            //    args = base.ParseScriptArguments(args);
+            //    object obj = this.m_remoteWebDriver.ExecuteAsyncScript(script, args);
+            //    return base.ValidateScriptReturnValue(obj);
+            //});
             var executor = (IJavaScriptExecutor) _driver;
             return executor.ExecuteScript(script, args);
         }
@@ -55,12 +80,42 @@ namespace Selenium.Extensions
 
         public Screenshot GetScreenshot()
         {
-            return ((ITakesScreenshot) _driver).GetScreenshot();
+            LogMessage(LogLevel.Verbose, "Taking a screenshot");
+            if (string.IsNullOrEmpty(Settings.TestDirectory) || !Directory.Exists(Settings.TestDirectory))
+            {
+                throw new TestConfigurationException("You have not set a valid directory to save screenshots in. Please set a valid directory first");
+            }
+            return ((ITakesScreenshot)_driver).GetScreenshot();
         }
+
+        public void SaveScreenShot()
+        {
+            LogMessage(LogLevel.Verbose, "Taking a full page screenshot");
+            Bitmap screenshot;
+            if (Settings.DriverType == WebDriverType.ChromeDriver || Settings.DriverType == WebDriverType.SafariDriver)
+            {
+                screenshot = ScreenShotExtensions.GetFullScreenShot(this, Settings);
+            }
+            else
+            {
+                using (var memStream = new MemoryStream(((ITakesScreenshot)_driver).GetScreenshot().AsByteArray))
+                {
+                    screenshot = new Bitmap(Image.FromStream(memStream));
+                }
+            }
+            screenshot?.Save(Settings.TestDirectory + "ScreenShots" + "\\" + Settings.BrowserName + "_" + WebDriverManager.ScreenShotCounter++ + ".png", ImageFormat.Png);
+        }
+
 
         public IWebElement FindElement(By @by)
         {
-            return _context.FindElement(@by);
+            var foundElement = _context.FindElement(@by);
+            if (CurrentElement != null)
+            {
+                PreviousElement = CurrentElement;
+            }
+            CurrentElement = foundElement;
+            return foundElement;
         }
 
 
@@ -101,17 +156,21 @@ namespace Selenium.Extensions
 
         public string GetText()
         {
+            LogMessage(LogLevel.Verbose, $"Getting text from: [{By.TagName("body")}]");
             return _driver.FindElement(By.TagName("body")).Text;
         }
 
         public bool HasElement(By locator)
         {
+            LogMessage(LogLevel.Verbose, $"Checking if element exists: [{locator}]");
             try
             {
                 _driver.FindElement(locator);
+                LogMessage(LogLevel.Verbose, $"Element exists: [{locator}]");
             }
             catch (NoSuchElementException)
             {
+                LogMessage(LogLevel.Verbose, $"Element does not exist: [{locator}]");
                 return false;
             }
             return true;
@@ -119,6 +178,7 @@ namespace Selenium.Extensions
 
         public void WaitForPageToLoad(TimeSpan? timeSpan = null)
         {
+            LogMessage(LogLevel.Verbose, $"Waiting for page to load: [{Url}]");
             if (timeSpan == null)
             {
                 timeSpan = TimeSpan.FromSeconds(30);
@@ -127,6 +187,7 @@ namespace Selenium.Extensions
             var javascript = _driver as IJavaScriptExecutor;
             if (javascript == null)
             {
+                LogMessage(LogLevel.Basic, "Driver must support javascript execution");
                 throw new ArgumentException("Driver must support javascript execution", nameof(_driver));
             }
             wait.Until(d =>
@@ -135,16 +196,23 @@ namespace Selenium.Extensions
                 {
                     var readyState = javascript.ExecuteScript(
                         "if (document.readyState) return document.readyState;").ToString();
-                    return readyState.ToLower() == "complete";
+                    var response = readyState.ToLower();
+                    if (response == "complete")
+                    {
+                        LogMessage(LogLevel.Verbose, $"Page has finished loading: [{Url}]");
+                    }
+                    return response == "complete";
                 }
                 catch (InvalidOperationException e)
                 {
                     //Window is no longer available
+                    LogMessage(LogLevel.Basic, "Unable to connect to browser");
                     return e.Message.ToLower().Contains("unable to get browser");
                 }
                 catch (WebDriverException e)
                 {
                     //Browser is no longer available
+                    LogMessage(LogLevel.Basic, "Browser no longer available");
                     return e.Message.ToLower().Contains("unable to connect");
                 }
                 catch (Exception)
@@ -156,6 +224,7 @@ namespace Selenium.Extensions
 
         public void WaitUntiDisplayed(By locator, TimeSpan timeout)
         {
+            LogMessage(LogLevel.Verbose, $"Waiting for element to be displayed: [{locator}]");
             new WebDriverWait(_driver, timeout)
                 .Until(d => d.FindElement(locator).Enabled
                             && d.FindElement(locator).Displayed
@@ -165,11 +234,13 @@ namespace Selenium.Extensions
 
         public void WaitUntilVisible(By locator, TimeSpan timeout)
         {
+            LogMessage(LogLevel.Verbose, $"Waiting for element to be visible: [{locator}]");
             (new WebDriverWait(_driver, timeout)).Until(ExpectedConditions.ElementIsVisible(locator));
         }
 
         public void ScrollDownPage()
         {
+            LogMessage(LogLevel.Verbose, $"Scrolling down page");
             var javascript = _driver as IJavaScriptExecutor;
             if (javascript == null)
             {
@@ -180,6 +251,7 @@ namespace Selenium.Extensions
 
         public IWebElement FindElementOfType(ElementType elementType)
         {
+            LogMessage(LogLevel.Verbose, $"Finding element of type: [{elementType}]");
             switch (elementType)
             {
                 case ElementType.Button:
@@ -337,6 +409,7 @@ namespace Selenium.Extensions
 
         public ReadOnlyCollection<IWebElement> FindElementsOfType(ElementType elementType)
         {
+            LogMessage(LogLevel.Verbose, $"Finding elements of type: [{elementType}]");
             switch (elementType)
             {
                 case ElementType.Button:
@@ -484,6 +557,7 @@ namespace Selenium.Extensions
 
         public bool IsAlertPresent()
         {
+            LogMessage(LogLevel.Verbose, "Checking if alert is present");
             try
             {
                 var alert = _driver.SwitchTo().Alert();
@@ -504,6 +578,7 @@ namespace Selenium.Extensions
 
         public IWebElement SelectElementByText(By locator, string text)
         {
+            LogMessage(LogLevel.Verbose, $"Selecting element with the text: [{text}]");
             return _driver
                 .FindElements(locator)
                 .SingleOrDefault(d => d.Text == text);
@@ -511,12 +586,14 @@ namespace Selenium.Extensions
 
         public ReadOnlyCollection<IWebElement> SelectElementsByText(By locator, string text)
         {
+            LogMessage(LogLevel.Verbose, $"Selecting elements with the text: [{text}]");
             return (ReadOnlyCollection<IWebElement>) _driver.FindElements(locator)
                 .Where(d => d.Text == text);
         }
 
         public void WaitForAjax()
         {
+            LogMessage(LogLevel.Verbose, "Waiting for jQuery to finish");
             while (true)
             {
                 bool ajaxIsComplete;
@@ -550,89 +627,128 @@ namespace Selenium.Extensions
             }
         }
 
-        public IWebElement WaitElement(By locator)
+        public void Wait(TimeSpan? timeSpan = null)
         {
-            WaitForElement(_driver, locator, Settings.TimeoutTimeSpan);
-            return _driver.FindElement(locator);
+
+            if (timeSpan == null)
+            {
+                timeSpan = TimeSpan.FromSeconds(1);
+            }
+            var waitTime = (TimeSpan) timeSpan;
+            LogMessage(LogLevel.Verbose, $"Waiting for seconds to pass: [{waitTime.Seconds}]");
+            Thread.Sleep(waitTime);
+            //var stopwatch = new Stopwatch();
+            //stopwatch.Start();
+            //while (stopwatch.Elapsed < waitTime)
+            //{
+            //}
+            //if (stopwatch.IsRunning)
+            //{
+            //    stopwatch.Stop();
+            //}
         }
 
         public IWebElement WaitforElement(By locator, TimeSpan timeSpan)
         {
+            LogMessage(LogLevel.Verbose, $"Waiting for element: [{locator}]");
             WaitForElement(_driver, locator, timeSpan);
             return _driver.FindElement(locator);
         }
 
         public IWebElement WaitElementDisappear(By locator)
         {
+            LogMessage(LogLevel.Verbose, $"Waiting for element to disappear: [{locator}]");
             WaitForElementDisappear(_driver, locator, Settings.TimeoutTimeSpan);
             return _driver.FindElement(locator);
         }
 
         public IWebElement WaitElementDisappear(By locator, TimeSpan timeSpan)
         {
+            LogMessage(LogLevel.Verbose, $"Waiting for element to disappear: [{locator}]");
             WaitForElementDisappear(_driver, locator, timeSpan);
             return _driver.FindElement(locator);
         }
 
         public IWebElement WaitElementIsInvisible(By locator)
         {
+            LogMessage(LogLevel.Verbose, $"Waiting for element to be visible: [{locator}]");
             WaitForElementInvisible(_driver, locator, Settings.TimeoutTimeSpan);
             return _driver.FindElement(locator);
         }
 
         public IWebElement WaitTillElementIsInvisible(By locator, TimeSpan timeSpan)
         {
+            LogMessage(LogLevel.Verbose, $"Waiting for element to be invisible: [{locator}]");
             WaitForElementInvisible(_driver, locator, timeSpan);
             return _driver.FindElement(locator);
         }
 
         public IWebElement WaitTillElementIsVisible(By locator)
         {
+            LogMessage(LogLevel.Verbose, $"Waiting for element to be visible: [{locator}]");
             WaitForElementVisible(_driver, locator, Settings.TimeoutTimeSpan);
             return _driver.FindElement(locator);
         }
 
         public IWebElement WaitTillElementIsVisible(By locator, TimeSpan timeSpan)
         {
+            LogMessage(LogLevel.Verbose, $"Waiting for element to be visible: [{locator}]");
             WaitForElementVisible(_driver, locator, timeSpan);
             return _driver.FindElement(locator);
         }
 
         public IWebElement SelectElementByAttribute(By locator, string attribute, string value)
         {
+            LogMessage(LogLevel.Verbose, $"Selecting element by attribute: [{locator}]");
             return _driver.FindElements(locator).SingleOrDefault(d => d.GetAttribute(attribute) == value);
         }
 
         public IReadOnlyCollection<IWebElement> SelectElementsByAttribute(By locator, string attribute, string value)
         {
+            LogMessage(LogLevel.Verbose, $"Selecting elements by attribute: [{locator}]");
             return (IReadOnlyCollection<IWebElement>) _driver.FindElements(locator)
                 .Where(d => d.GetAttribute(attribute) == value);
         }
 
         public void SwitchToAlert(AlertAction alertAction)
         {
+            LogMessage(LogLevel.Verbose, "Switching to alert");
+            var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(5));
+            wait.IgnoreExceptionTypes(typeof(NoAlertPresentException));
+            wait.Until(ExpectedConditions.AlertIsPresent());
+
             var alert = _driver.SwitchTo().Alert();
             switch (alertAction)
             {
                 case AlertAction.Accept:
+                    LogMessage(LogLevel.Verbose, "Accepting the alert");
                     alert.Accept();
                     break;
                 case AlertAction.Dismiss:
+                    LogMessage(LogLevel.Verbose, "Dismissing the alert");
                     alert.Dismiss();
                     break;
             }
+
         }
 
         public void SwitchToPrompt(AlertAction alertAction, string promptValue)
         {
+            LogMessage(LogLevel.Verbose, "Switching to prompt");
+            var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(5));
+            wait.IgnoreExceptionTypes(typeof(NoAlertPresentException));
+            wait.Until(ExpectedConditions.AlertIsPresent());
+
             var alert = _driver.SwitchTo().Alert();
             switch (alertAction)
             {
                 case AlertAction.Accept:
+                    LogMessage(LogLevel.Verbose, $"Accepting the prompt with the value: [{promptValue}]");
                     alert.SendKeys(promptValue);
                     alert.Accept();
                     break;
                 case AlertAction.Dismiss:
+                    LogMessage(LogLevel.Verbose, "Dismissing the prompt");
                     alert.Dismiss();
                     break;
             }
@@ -640,6 +756,12 @@ namespace Selenium.Extensions
 
         public void SwitchToWindow(string windowTitle)
         {
+            LogMessage(LogLevel.Verbose, $"Switching to window: [{windowTitle}]");
+            var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(5));
+            wait.IgnoreExceptionTypes(typeof(NoAlertPresentException));
+            wait.Until(driver => _driver.WindowHandles.Count > 1);
+
+
             var windowHandles = _driver.WindowHandles;
             _mainWindowHandle = _driver.CurrentWindowHandle;
             foreach (string handle in windowHandles.Where(handle => handle != _mainWindowHandle))
@@ -657,6 +779,7 @@ namespace Selenium.Extensions
 
         public void ClosePopUpWindow()
         {
+            LogMessage(LogLevel.Verbose, $"Closing popup window");
             _driver.Close();
             if (!string.IsNullOrEmpty(_mainWindowHandle))
             {
@@ -669,25 +792,62 @@ namespace Selenium.Extensions
             
         }
 
-        public void TakeAndSaveScreenShot()
+
+        public void Highlight(By locator, bool removeHighlight = false)
         {
-            if (string.IsNullOrEmpty(Settings.TestDirectory) ||
-                !Directory.Exists(Settings.TestDirectory))
-            {
-                throw new TestException("You have not set a valid directory to save screenshots in. Please set a valid directory first");
-            }
-            if (Settings.DriverType == WebDriverType.ChromeDriver || Settings.DriverType == WebDriverType.SafariDriver)
-            {
-                var screenshot = FullScreenShot.GetFullScreenShot(this, Settings);
+            string highlightLogText = removeHighlight ? "Un-Highlight" : "Highlight";
+            //AppendVerbose(string.Format("{0} locator: [{1}]", highlightLogText, locator));
 
-            }
-            else
-            {
-                var screenshot = GetScreenshot();
-            }
-            
-            
+            object element = _driver.FindElement(locator);
+            Highlighter.HighlightElement(element, removeHighlight);
+        }
 
+        public void Highlight(IWebElement webElement, bool removeHighlight = false)
+        {
+            Highlighter.HighlightElement(webElement, removeHighlight);
+        }
+
+        public void LogMessage(LogLevel level, string message)
+        {
+            Logger.AppendLogEntry(level, message);
+        }
+
+        public bool UsingjQuery()
+        {
+            var javascript = _driver as IJavaScriptExecutor;
+            if (javascript == null)
+            {
+                LogMessage(LogLevel.Basic, "Driver must support javascript execution");
+                throw new ArgumentException("Driver must support javascript execution", nameof(_driver));
+            }
+            bool result = false;
+            try
+            {
+                result = (bool)javascript.ExecuteScript("return typeof jQuery == 'function'");
+            }
+            catch (WebDriverException)
+            {
+            }
+            return result;
+        }
+
+        public Size GetViewport()
+        {
+            var javascriptExecutor = _driver as IJavaScriptExecutor;
+            if (javascriptExecutor == null)
+            {
+                LogMessage(LogLevel.Basic, "Driver must support javascript execution");
+                throw new ArgumentException("Driver must support javascript execution", nameof(_driver));
+            }
+            const string Javascript =
+    @"{var a;var b;if(typeof window.innerWidth!=""undefined""){a=window.innerWidth,b=window.innerHeight}else if(typeof document.documentElement!=""undefined""&&typeof document.documentElement.clientWidth!=""undefined""&&document.documentElement.clientWidth!=0){a=document.documentElement.clientWidth,b=document.documentElement.clientHeight}else{a=document.getElementsByTagName(""body"")[0].clientWidth,b=document.getElementsByTagName(""body"")[0].clientHeight}return[a,b]}";
+            var dimensions = (ReadOnlyCollection<object>)javascriptExecutor.ExecuteScript(Javascript);
+            return new Size(Convert.ToInt32(dimensions[0]), Convert.ToInt32(dimensions[1]));
+        }
+
+        public void SelectFile(string directoryName, string[] files)
+        {
+            DialogManager.SelectFiles(Settings.DriverType, directoryName, files);
         }
 
         public string Url
@@ -707,29 +867,44 @@ namespace Selenium.Extensions
             get { return new EagerReadOnlyCollection<string>(() => _driver.WindowHandles); }
         }
 
-        private static void WaitForElement(IWebDriver driver, By locator, TimeSpan timespan)
+        private void WaitForElement(IWebDriver driver, By locator, TimeSpan timespan)
         {
+            LogMessage(LogLevel.Verbose, $"Waiting for element: [{locator}]");
             IWait<IWebDriver> wait = new WebDriverWait(driver, timespan);
             wait.Until(d => d.FindElements(locator).Any());
         }
 
-        private static void WaitForElementDisappear(IWebDriver driver, By locator, TimeSpan timespan)
+        private void WaitForElementDisappear(IWebDriver driver, By locator, TimeSpan timespan)
         {
+            LogMessage(LogLevel.Verbose, $"Waiting for element to disappear: [{locator}]");
             IWait<IWebDriver> wait = new WebDriverWait(driver, timespan);
             wait.Until(d => d.FindElements(locator).Any() == false);
         }
 
-        private static void WaitForElementInvisible(IWebDriver driver, By locator, TimeSpan timespan)
+        private void WaitForElementInvisible(IWebDriver driver, By locator, TimeSpan timespan)
         {
+            LogMessage(LogLevel.Verbose, $"Waiting for element to to be invisible: [{locator}]");
             IWait<IWebDriver> wait = new WebDriverWait(driver, timespan);
             wait.Until(d => !d.FindElements(locator).Any(e => e.Displayed));
         }
 
-        private static void WaitForElementVisible(IWebDriver driver, By locator, TimeSpan timespan)
+        private void WaitForElementVisible(IWebDriver driver, By locator, TimeSpan timespan)
         {
+            LogMessage(LogLevel.Verbose, $"Waiting for element to to be visible: [{locator}]");
             IWait<IWebDriver> wait = new WebDriverWait(driver, timespan);
             wait.Until(d => d.FindElements(locator).Any(e => e.Displayed));
         }
+
+        public void WriteLine(string message)
+        {
+            _testOutputHelper.WriteLine(message);
+        }
+
+        public void WriteLine(string format, params object[] args)
+        {
+            _testOutputHelper.WriteLine(format, args);
+        }
+
     }
 
     public class EagerReadOnlyCollection<T>

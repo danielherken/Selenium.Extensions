@@ -9,6 +9,7 @@ using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Interactions.Internal;
 using OpenQA.Selenium.Internal;
 using OpenQA.Selenium.Support.UI;
+using Selenium.Extensions.Interfaces;
 
 namespace Selenium.Extensions
 {
@@ -20,9 +21,10 @@ namespace Selenium.Extensions
         private readonly By _selfSelector;
         private readonly TestSettings _settings;
         private IWebElement _element;
+        private IJavaScriptExecutor _javaScriptExecutor;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TestWebElement"/> class.
+        /// Initializes a new instance of the <see cref="TestWebElement" /> class.
         /// </summary>
         /// <param name="settings">The settings.</param>
         /// <param name="element">The element.</param>
@@ -68,7 +70,29 @@ namespace Selenium.Extensions
         /// <returns></returns>
         public IWebElement FindElementByClassName(string className)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Finding element by class name [{className}] from " + _selfSelector);
             return Interact(elmnt => ((IFindsByClassName) elmnt).FindElementByClassName(className));
+        }
+
+        public IJavaScriptExecutor JavaScriptExecutor
+        {
+            get
+            {
+                if (_javaScriptExecutor == null)
+                {
+                    _javaScriptExecutor = GetJavascriptExecutor();
+                    if (_javaScriptExecutor == null)
+                    {
+                        throw new ArgumentException("Element must wrap a web driver that supports javascript execution",
+                            nameof(_javaScriptExecutor));
+                    }
+                }
+                return _javaScriptExecutor;
+            }
+            set
+            {
+                _javaScriptExecutor = value;
+            }
         }
 
         /// <summary>
@@ -78,6 +102,7 @@ namespace Selenium.Extensions
         /// <returns></returns>
         public IWebElement FindElementOfType(ElementType elementType)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Finding element of type [{elementType}] from " + _selfSelector);
             switch (elementType)
             {
                 case ElementType.Div:
@@ -207,32 +232,38 @@ namespace Selenium.Extensions
 
         public ReadOnlyCollection<IWebElement> FindElementsByClassName(string className)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Finding elements by class name [{className}] from " + _selfSelector);
             return Interact(elmnt => ((IFindsByClassName) elmnt).FindElementsByClassName(className));
         }
 
         public IWebElement FindElementByCssSelector(string cssSelector)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Finding element by css selector [{cssSelector}] from " + _selfSelector);
             return Interact(elmnt => ((IFindsByCssSelector) elmnt).FindElementByCssSelector(cssSelector));
         }
 
         public ReadOnlyCollection<IWebElement> FindElementsByCssSelector(string cssSelector)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Finding elements by css selector [{cssSelector}] from " + _selfSelector);
             return Interact(elmnt => ((IFindsByCssSelector) elmnt).FindElementsByCssSelector(cssSelector));
         }
 
         public IWebElement FindElementById(string id)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Finding element by id [{id}] from " + _selfSelector);
             return Interact(elmnt => ((IFindsById) elmnt).FindElementById(id));
         }
 
         public ReadOnlyCollection<IWebElement> FindElementsById(string id)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Finding elements by id [{id}] from " + _selfSelector);
             return Interact(elmnt => ((IFindsById) elmnt).FindElementsById(id));
         }
 
 
         IWebElement IFindsByLinkText.FindElementByLinkText(string linkText)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Finding element by link text [{linkText}] from " + _selfSelector);
             return Interact(elmnt =>
             {
                 var e = ((IFindsByLinkText) elmnt);
@@ -242,6 +273,7 @@ namespace Selenium.Extensions
 
         ReadOnlyCollection<IWebElement> IFindsByLinkText.FindElementsByLinkText(string linkText)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Finding elements by link text [{linkText}] from " + _selfSelector);
             return Interact(elmnt =>
             {
                 var e = ((IFindsByLinkText) elmnt);
@@ -251,41 +283,49 @@ namespace Selenium.Extensions
 
         public IWebElement FindElementByName(string name)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Finding element by name [{name}] from " + _selfSelector);
             return Interact(elmnt => ((IFindsByName) elmnt).FindElementByName(name));
         }
 
         public ReadOnlyCollection<IWebElement> FindElementsByName(string name)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Finding elements by name [{name}] from " + _selfSelector);
             return Interact(elmnt => ((IFindsByName) elmnt).FindElementsByName(name));
         }
 
         public IWebElement FindElementByPartialLinkText(string partialLinkText)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Finding element partial link text [{partialLinkText}] from " + _selfSelector);
             return Interact(elmnt => ((IFindsByPartialLinkText) elmnt).FindElementByPartialLinkText(partialLinkText));
         }
 
         public ReadOnlyCollection<IWebElement> FindElementsByPartialLinkText(string partialLinkText)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Finding elements partial link text [{partialLinkText}] from " + _selfSelector);
             return Interact(elmnt => ((IFindsByPartialLinkText) elmnt).FindElementsByPartialLinkText(partialLinkText));
         }
 
         public IWebElement FindElementByTagName(string tagName)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Finding element by tag name [{tagName}] from " + _selfSelector);
             return Interact(elmnt => ((IFindsByTagName) elmnt).FindElementByTagName(tagName));
         }
 
         public ReadOnlyCollection<IWebElement> FindElementsByTagName(string tagName)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Finding elements by tag name [{tagName}] from " + _selfSelector);
             return Interact(elmnt => ((IFindsByTagName) elmnt).FindElementsByTagName(tagName));
         }
 
         public IWebElement FindElementByXPath(string xpath)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Finding element by xpath [{xpath}] from " + _selfSelector);
             return Interact(elmnt => ((IFindsByXPath) elmnt).FindElementByXPath(xpath));
         }
 
         public ReadOnlyCollection<IWebElement> FindElementsByXPath(string xpath)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Finding elements by xpath [{xpath}] from " + _selfSelector);
             return Interact(elmnt => ((IFindsByXPath) elmnt).FindElementsByXPath(xpath));
         }
 
@@ -293,6 +333,7 @@ namespace Selenium.Extensions
         {
             get
             {
+                WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Getting scroll position");
                 return Interact(elmnt =>
                 {
                     var locatable = (ILocatable) elmnt;
@@ -305,6 +346,7 @@ namespace Selenium.Extensions
         {
             get
             {
+                WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Getting screen coordinates");
                 return Interact(elmnt =>
                 {
                     var locatable = (ILocatable) elmnt;
@@ -315,36 +357,43 @@ namespace Selenium.Extensions
 
         public Screenshot GetScreenshot()
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Getting a creenshot");
             return Interact(elmnt => ((ITakesScreenshot) elmnt).GetScreenshot());
         }
 
         public IWebElement FindElement(By @by)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Finding element by: [{@by}] from " + _selfSelector);
             return _context.FindElement(@by);
         }
 
         public ReadOnlyCollection<IWebElement> FindElements(By @by)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Finding elements by: [{@by}] from " + _selfSelector);
             return _context.FindElements(@by);
         }
 
         public void Clear()
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Clearing element for " + _selfSelector);
             Interact(elmnt => elmnt.Clear());
         }
 
         public void SendKeys(string text)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Sending keys: [{text}] to " + _selfSelector);
             Interact(elmnt => elmnt.SendKeys(text));
         }
 
         public void SetText(string text)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Setting text: [{text}] for " + _selfSelector);
             Interact(elmnt => elmnt.SendKeys(text));
         }
 
         public void Submit()
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Submitting for for " + _selfSelector);
             Interact(elmnt => elmnt.Submit());
         }
 
@@ -388,38 +437,33 @@ namespace Selenium.Extensions
 
         public void Focus()
         {
-            var javascriptExecutor = GetJavascriptExecutor();
-            if (javascriptExecutor == null)
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Focusing on element: [{_selfSelector}]");
+            Interact(elmnt =>
             {
-                throw new ArgumentException("Element must wrap a web driver that supports javascript execution",
-                    nameof(javascriptExecutor));
-            }
-            switch (_element.TagName)
-            {
-                case "input":
-                case "select":
-                case "textarea":
-                case "a":
-                case "iframe":
-                case "button":
-                    javascriptExecutor.ExecuteScript("arguments[0].focus();", _element);
-                    break;
-            }
+                switch (elmnt.TagName)
+                {
+                    case "input":
+                    case "select":
+                    case "textarea":
+                    case "a":
+                    case "iframe":
+                    case "button":
+                        JavaScriptExecutor.ExecuteScript("arguments[0].focus();", elmnt);
+                        break;
+                }
+            });
+            
         }
 
         public void Blur()
         {
-            var javascriptExecutor = GetJavascriptExecutor();
-            if (javascriptExecutor == null)
-            {
-                throw new ArgumentException("Element must wrap a web driver that supports javascript execution",
-                    nameof(javascriptExecutor));
-            }
-            javascriptExecutor.ExecuteAsyncScript("arguments[0].blur();", _element);
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Bluring element: [{_selfSelector}]");
+            Interact(elmnt => JavaScriptExecutor.ExecuteAsyncScript("arguments[0].blur();", elmnt));
         }
 
         public void Hover()
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Hovering on element: [{_selfSelector}]");
             var driver = GetDriver();
             var action = new Actions(driver);
             Interact(elmnt => action.MoveToElement(elmnt).Build().Perform());
@@ -427,6 +471,7 @@ namespace Selenium.Extensions
 
         public void HoverAndClick()
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Hovering and clicking on element: [{_selfSelector}]");
             var driver = GetDriver();
             var action = new Actions(driver);
             Interact(elmnt => action.MoveToElement(elmnt).Click(elmnt).Build().Perform());
@@ -434,19 +479,15 @@ namespace Selenium.Extensions
 
         public void ScrollIntoView()
         {
-            var javascriptExecutor = GetJavascriptExecutor();
-            if (javascriptExecutor == null)
-            {
-                throw new ArgumentException("Element must wrap a web driver that supports javascript execution",
-                    nameof(javascriptExecutor));
-            }
-            javascriptExecutor.ExecuteScript("arguments[0].scrollIntoView(true);", _element);
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Scrolloing element into view: [{_selfSelector}]");
+            Interact(elmnt => JavaScriptExecutor.ExecuteScript("arguments[0].scrollIntoView(true);", elmnt));
         }
 
         public string ClassName()
         {
             try
             {
+                WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Getting classname for: [{_selfSelector}]");
                 return Interact(elmnt => (elmnt).GetAttribute("class"));
             }
             catch
@@ -459,6 +500,7 @@ namespace Selenium.Extensions
         {
             try
             {
+                WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Getting name for: [{_selfSelector}]");
                 return Interact(elmnt => (elmnt).GetAttribute("name"));
             }
             catch (Exception)
@@ -471,6 +513,7 @@ namespace Selenium.Extensions
         {
             try
             {
+                WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Getting id for: [{_selfSelector}]");
                 return Interact(elmnt => (elmnt).GetAttribute("id"));
             }
             catch (Exception)
@@ -483,6 +526,7 @@ namespace Selenium.Extensions
         {
             try
             {
+                WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Getting style for: [{_selfSelector}]");
                 return Interact(elmnt => (elmnt).GetAttribute("style"));
             }
             catch (Exception)
@@ -495,6 +539,7 @@ namespace Selenium.Extensions
         {
             try
             {
+                WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Getting value for: [{_selfSelector}]");
                 return Interact(elmnt => (elmnt).GetAttribute("value"));
             }
             catch
@@ -507,6 +552,7 @@ namespace Selenium.Extensions
         {
             try
             {
+                WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Getting type for: [{_selfSelector}]");
                 return Interact(elmnt => (elmnt).GetAttribute("type"));
             }
             catch (Exception)
@@ -519,6 +565,7 @@ namespace Selenium.Extensions
         {
             try
             {
+                WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Getting title for: [{_selfSelector}]");
                 return Interact(elmnt => (elmnt).GetAttribute("title"));
             }
             catch (Exception)
@@ -530,26 +577,31 @@ namespace Selenium.Extensions
 
         public IWebElement GetParent()
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Getting parent element for: [{_selfSelector}]");
             return Interact(elmnt => (elmnt).FindElement(By.XPath("./parent::*")));
         }
 
         public IWebElement GetChild()
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Getting child element for: [{_selfSelector}]");
             return Interact(elmnt => (elmnt).FindElement(By.XPath("./child::*")));
         }
 
         public IWebElement GetPreviousSibling()
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Getting preceding sibling element for: [{_selfSelector}]");
             return Interact(elmnt => (elmnt).FindElement(By.XPath("./preceding-sibling::*")));
         }
 
         public IWebElement GetNextSibling()
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Getting following sibling element for: [{_selfSelector}]");
             return Interact(elmnt => (elmnt).FindElement(By.XPath("./following-sibling::*")));
         }
 
         public ReadOnlyCollection<IWebElement> GetElementsOfType(ElementType elementType)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Getting elements of type: [{elementType}] for " + _selfSelector);
             switch (elementType)
             {
                 case ElementType.Div:
@@ -679,6 +731,7 @@ namespace Selenium.Extensions
 
         public void DoubleClick()
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Double clicking " + _selfSelector);
             var driver = GetDriver();
             var action = new Actions(driver);
             Interact(elmnt => action.DoubleClick(elmnt).Build().Perform());
@@ -687,6 +740,7 @@ namespace Selenium.Extensions
 
         public void RightClick()
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Right clicking " + _selfSelector);
             var driver = GetDriver();
             var action = new Actions(driver);
             Interact(elmnt => action.ContextClick(elmnt).Build().Perform());
@@ -694,6 +748,7 @@ namespace Selenium.Extensions
 
         public void ClickAndHold()
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Clicking and holding " + _selfSelector);
             var driver = GetDriver();
             var action = new Actions(driver);
             Interact(elmnt => action.ClickAndHold(elmnt).Build().Perform());
@@ -701,6 +756,7 @@ namespace Selenium.Extensions
 
         public void DragAndDrop(IWebElement targetElement)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Dragging and dropping from " + _selfSelector);
             var driver = GetDriver();
             var action = new Actions(driver);
             Interact(elmnt => action.DragAndDrop(elmnt, targetElement).Build().Perform());
@@ -709,16 +765,29 @@ namespace Selenium.Extensions
 
         public void Click()
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Clicking " + _selfSelector);
             Interact(elmnt => elmnt.Click());
         }
 
         public string GetAttribute(string attributeName)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Getting attribute value " + attributeName  + " for " + _selfSelector);
             return Interact(elmnt => elmnt.GetAttribute(attributeName));
+        }
+
+        public void SetAttribute(string attributeName, string value)
+        {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Setting atribute " + attributeName + " to " + value + " for " + _selfSelector);
+            Interact(elmnt =>
+            {
+                JavaScriptExecutor.ExecuteScript("arguments[0].setAttribute(arguments[1], arguments[2])", elmnt, attributeName, value);
+            });
+
         }
 
         public string GetCssValue(string propertyName)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Getting property " + propertyName + " for " + _selfSelector);
             return Interact(elmnt => elmnt.GetCssValue(propertyName));
         }
 
@@ -726,6 +795,7 @@ namespace Selenium.Extensions
         {
             Interact(elmnt =>
             {
+                WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Selecting drom dropdown " + _selfSelector + " for text " + text);
                 var selectElement = new SelectElement(elmnt);
                 selectElement.SelectByText(text);
             });
@@ -733,6 +803,7 @@ namespace Selenium.Extensions
 
         public void SelectFromDropDownByIndex(int index)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Selecting drom dropdown " + _selfSelector + " by index " + index);
             Interact(elmnt =>
             {
                 if (elmnt.GetAttribute("multiple") != null)
@@ -758,6 +829,7 @@ namespace Selenium.Extensions
 
         public void SelectFromDropDownByValue(string value)
         {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Selecting drom dropdown " + _selfSelector + " by value " + value);
             Interact(elmnt =>
             {
                 var selectElement = new SelectElement(elmnt);
@@ -765,39 +837,152 @@ namespace Selenium.Extensions
             });
         }
 
+        public void MoveToCaretPosition(int position)
+        {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Moving to caret position " + position + " for " + _selfSelector);
+            //http://stackoverflow.com/questions/499126/jquery-set-cursor-position-in-text-area
+            Interact(elmnt => JavaScriptExecutor.ExecuteScript("(function(element, position) { if (element.setSelectionRange) { element.focus(); element.setSelectionRange(position, position);} else if (element.createTextRange) { var range = element.createTextRange(); range.collapse(true); range.moveEnd('character', position); range.moveStart('character', position); range.select(); } })(arguments[0],arguments[1]);", elmnt, position));
+        }
+
+        public void PerformMediaAction(MediaAction mediaAction, float arg = 0)
+        {
+            if (mediaAction == MediaAction.Play)
+            {
+                WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Starting to play " + _selfSelector);
+                Interact(elmnt => JavaScriptExecutor.ExecuteScript("arguments[0].play()", elmnt));
+            }
+            else if (mediaAction == MediaAction.Pause)
+            {
+                WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Pausing " + _selfSelector);
+                Interact(elmnt => JavaScriptExecutor.ExecuteScript("arguments[0].pause()", elmnt));
+            }
+            else if (mediaAction == MediaAction.VolumeChange)
+            {
+                WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Setting volume to " + arg + " for "+  _selfSelector);
+                SetAttribute("volume", "(float)" + arg);
+            }
+            else if (mediaAction == MediaAction.RateChange)
+            {
+                WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Setting playback rate to " + arg + " for " + _selfSelector);
+                SetAttribute("playbackRate", "(float)" + arg);
+            }
+            else if (mediaAction == MediaAction.RateChange)
+            {
+                WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Changing the current time to " + arg + " for " + _selfSelector);
+                SetAttribute("currentTime", "(float)" + arg);
+            }
+        }
+
+
+        public void MouseOut()
+        {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Performing MouseOut on element: [{_selfSelector}]");
+            if (WebDriverManager.TestWebDriver.UsingjQuery())
+            {
+                Interact(elmnt =>
+                {
+                    JavaScriptExecutor.ExecuteScript("$(arguments[0]).mouseout();", elmnt);
+                });
+            }
+            else
+            {
+                var driver = GetDriver();
+                var action = new Actions(driver);
+                Interact(elmnt => action.MoveByOffset(0, 0).Build().Perform());
+            }
+        }
+
+        public void MouseOver()
+        {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Performing MouseOver on element: [{_selfSelector}]");
+            Interact(elmnt =>
+            {
+                JavaScriptExecutor.ExecuteScript("var evObj = document.createEvent('MouseEvents'); evObj.initMouseEvent(\"mouseover\", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);arguments[0].dispatchEvent(evObj);", elmnt);
+            });
+
+        }
+
+        public void MouseUp()
+        {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Performing MouseOver on element: [{_selfSelector}]");
+            Interact(elmnt =>
+            {
+                JavaScriptExecutor.ExecuteScript("var evObj = document.createEvent('MouseEvents'); evObj.initMouseEvent(\"mouseup\", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);arguments[0].dispatchEvent(evObj);", elmnt);
+            });
+
+        }
+
+        public void MouseDown()
+        {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Performing MouseOver on element: [{_selfSelector}]");
+            Interact(elmnt =>
+            {
+                JavaScriptExecutor.ExecuteScript("var evObj = document.createEvent('MouseEvents'); evObj.initMouseEvent(\"mousedown\", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);arguments[0].dispatchEvent(evObj);", elmnt);
+            });
+
+        }
+
         public string TagName
         {
-            get { return Interact(elmnt => elmnt.TagName); }
+            get
+            {
+                WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Getting tag name for " + _selfSelector);
+                return Interact(elmnt => elmnt.TagName);
+            }
         }
 
         public string Text
         {
-            get { return Interact(elmnt => elmnt.Text); }
+            get
+            {
+                WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Getting text name for " + _selfSelector);
+                return Interact(elmnt => elmnt.Text);
+            }
         }
 
         public bool Enabled
         {
-            get { return Interact(elmnt => elmnt.Enabled); }
+            get
+            {
+                WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Getting enabled property for " + _selfSelector);
+                return Interact(elmnt => elmnt.Enabled);
+            }
         }
 
         public bool Selected
         {
-            get { return Interact(elmnt => elmnt.Selected); }
+            get
+            {
+                WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Getting selected property for " + _selfSelector);
+                return Interact(elmnt => elmnt.Selected);
+            }
         }
 
         public Point Location
         {
-            get { return Interact(elmnt => elmnt.Location); }
+            get
+            {
+                WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Getting location for " + _selfSelector);
+                return Interact(elmnt => elmnt.Location);
+            }
         }
 
         public Size Size
         {
-            get { return Interact(elmnt => elmnt.Size); }
+            get
+            {
+                WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Getting size for " + _selfSelector);
+                return Interact(elmnt => elmnt.Size);
+            }
         }
 
         public bool Displayed
         {
-            get { return Interact(elmnt => elmnt.Displayed); }
+            get
+            {
+                WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Getting displayed property for " + _selfSelector);
+                return Interact(elmnt => elmnt.Displayed);
+            }
         }
 
 

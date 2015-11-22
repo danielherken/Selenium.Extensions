@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Linq;
 using OpenQA.Selenium;
+using Selenium.Extensions.Interfaces;
 
 namespace Selenium.Extensions
 {

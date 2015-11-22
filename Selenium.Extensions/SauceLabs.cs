@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using OpenQA.Selenium.Remote;
+using Selenium.Extensions.Exceptions;
 
 namespace Selenium.Extensions
 {
@@ -19,7 +20,7 @@ namespace Selenium.Extensions
         /// <param name="orientation">The device orientation.</param>
         /// <param name="testSettings">The test settings.</param>
         /// <returns></returns>
-        /// <exception cref="TestException">Unable to set the desired capabilities</exception>
+        /// <exception cref="TestConfigurationException">Unable to set the desired capabilities</exception>
         public static DesiredCapabilities GetDesiredCapability(string username, string accessKey, string browserName, string os, string apiName, string device, string version, DeviceOrientation orientation, TestSettings testSettings)
         {
             DesiredCapabilities caps = null;

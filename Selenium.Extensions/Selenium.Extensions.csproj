@@ -37,11 +37,15 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="UIAutomationClient" />
+    <Reference Include="UIAutomationProvider" />
+    <Reference Include="UIAutomationTypes" />
     <Reference Include="WebDriver, Version=2.48.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Selenium.WebDriver.2.48.1\lib\net40\WebDriver.dll</HintPath>
       <Private>True</Private>
@@ -50,34 +54,64 @@
       <HintPath>..\packages\Selenium.Support.2.48.1\lib\net40\WebDriver.Support.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="xunit.abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Users\James\Desktop\Test3\packages\xunit.abstractions.2.0.0\lib\net35\xunit.abstractions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="xunit.assert, Version=2.1.0.3179, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Users\James\Desktop\Test3\packages\xunit.assert.2.1.0\lib\dotnet\xunit.assert.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="xunit.core, Version=2.1.0.3179, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Users\James\Desktop\Test3\packages\xunit.extensibility.core.2.1.0\lib\dotnet\xunit.core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="xunit.execution.desktop, Version=2.1.0.3179, Culture=neutral, PublicKeyToken=8d05b1bb7a6fdb6c, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Users\James\Desktop\Test3\packages\xunit.extensibility.execution.2.1.0\lib\net45\xunit.execution.desktop.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DialogHelper.cs" />
+    <Compile Include="Exceptions\DriverNotFoundException.cs" />
+    <Compile Include="Exceptions\DriverBlockedException.cs" />
+    <Compile Include="Exceptions\TestConfigurationException.cs" />
+    <Compile Include="HighlightingStyle.cs" />
+    <Compile Include="DialogManager.cs" />
+    <Compile Include="Interfaces\IDialogManager.cs" />
+    <Compile Include="Interfaces\ILogger.cs" />
+    <Compile Include="Logger.cs" />
+    <Compile Include="RandomData.cs" />
+    <Compile Include="SendInputClass.cs" />
+    <Compile Include="StringExtensions.cs" />
+    <Compile Include="WebDriverLogger.cs" />
+    <Compile Include="WebDriverManager.cs" />
+    <Compile Include="Interfaces\IHighlighter.cs" />
     <Compile Include="SauceLabsCredentials.cs" />
-    <Compile Include="FullScreenShot.cs" />
-    <Compile Include="ITestWebDriver.cs" />
-    <Compile Include="ITestWebElement.cs" />
+    <Compile Include="ScreenShotExtensions.cs" />
+    <Compile Include="Interfaces\ITestWebDriver.cs" />
+    <Compile Include="Interfaces\ITestWebElement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProxyConfig.cs" />
     <Compile Include="SauceLabs.cs" />
     <Compile Include="TestRemoteWebDriver.cs" />
-    <Compile Include="GetWebDriver.cs" />
     <Compile Include="TestEnums.cs" />
-    <Compile Include="TestException.cs" />
     <Compile Include="TestInteractionWrapper.cs" />
     <Compile Include="TestSearchContext.cs" />
     <Compile Include="TestWebDriver.cs" />
     <Compile Include="TestWebElement.cs" />
-    <Compile Include="IRetryAction.cs" />
+    <Compile Include="Interfaces\IRetryAction.cs" />
     <Compile Include="RetryAction.cs" />
     <Compile Include="TestSettings.cs" />
-    <Compile Include="WaitFor.cs" />
+    <Compile Include="WaitUntil.cs" />
+    <Compile Include="WebDriverHighlighter.cs" />
+    <Compile Include="WindowHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Test\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy /y C:\Projects\Selenium.Extensions\Selenium.Extensions\bin\Release\*.dll "C:\Projects\Selenium.Extensions\NuGet\lib\net45"</PostBuildEvent>

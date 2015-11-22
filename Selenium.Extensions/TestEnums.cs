@@ -118,8 +118,18 @@ namespace Selenium.Extensions
 
     public enum LogLevel
     {
-        Errors,
-        Verbose,
-        None
+        None,
+        Basic,
+        Verbose
     }
+
+    public enum MediaAction
+    {
+        Play,
+        Pause,
+        VolumeChange,
+        RateChange,
+        Seeked
+    }
+
 }

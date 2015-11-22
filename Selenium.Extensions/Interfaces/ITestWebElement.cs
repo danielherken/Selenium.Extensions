@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Drawing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions.Internal;
 
-namespace Selenium.Extensions
+namespace Selenium.Extensions.Interfaces
 {
     public interface ITestWebElement
     {
@@ -18,7 +17,6 @@ namespace Selenium.Extensions
         string TagName { get; }
         string Text { get; }
         IWebElement WrappedElement { get; }
-
         void Clear();
         void Click();
         IWebElement FindElement(By by);
@@ -39,6 +37,7 @@ namespace Selenium.Extensions
         ReadOnlyCollection<IWebElement> FindElementsByTagName(string tagName);
         ReadOnlyCollection<IWebElement> FindElementsByXPath(string xpath);
         string GetAttribute(string attributeName);
+        void SetAttribute(string attributeName, string value);
         string GetCssValue(string propertyName);
         Screenshot GetScreenshot();
         void SendKeys(string text);
@@ -71,7 +70,13 @@ namespace Selenium.Extensions
         void SelectFromDropDownByText(string text);
         void SelectFromDropDownByIndex(int index);
         void SelectFromDropDownByValue(string value);
-
+        void MoveToCaretPosition(int position);
+        void PerformMediaAction(MediaAction mediaAction, float arg = 0);
+        void MouseOut();
+        void MouseOver();
+        void MouseUp();
+        void MouseDown();
 
     }
+
 }

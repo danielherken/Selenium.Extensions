@@ -1,5 +1,6 @@
 using System;
 using OpenQA.Selenium.Remote;
+using Xunit.Abstractions;
 
 namespace Selenium.Extensions
 {
@@ -71,14 +72,6 @@ namespace Selenium.Extensions
         public bool LogScreenShots { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to create a test log].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if the test should create a log, otherwise <c>false</c>.
-        /// </value>
-        public bool LogEvents { get; set; }
-
-        /// <summary>
         /// Gets or sets the name of the browser.
         /// </summary>
         /// <value>
@@ -96,14 +89,7 @@ namespace Selenium.Extensions
 
         public bool CapturePerformance { get; set; }
 
-        /// <summary>
-        /// Gets or sets the log level.
-        /// </summary>
-        /// <value>
-        /// The log level.
-        /// </value>
-        public LogLevel LogLevel { get; set; }
-
+        public HighlightingStyle HighlightingStyle { get; set; }
 
         /// <summary>
         ///     Setting for when to allow re-resolving of elements
@@ -117,6 +103,22 @@ namespace Selenium.Extensions
         /// The selenium hub settings.
         /// </value>
         public HubSettings SeleniumHubSettings { get; set; }
+
+        /// <summary>
+        /// Gets or sets the log settings.
+        /// </summary>
+        /// <value>
+        /// The log settings.
+        /// </value>
+        public LogLevel LogLevel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the test output helper.
+        /// </summary>
+        /// <value>
+        /// The test output helper.
+        /// </value>
+        public ITestOutputHelper TestOutputHelper { get; set; }
 
         /// <summary>
         /// Gets or sets the default test settings.
@@ -134,10 +136,10 @@ namespace Selenium.Extensions
             DeleteAllCookies = true,
             MaximiseBrowser = true,
             LogScreenShots = true,
-            LogEvents = false,
             LogLevel = LogLevel.None,
             HighlightElements = false,
             TestDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            HighlightingStyle = new HighlightingStyle { BackgroundColor = "#FFFFE0", BorderSizeInPixels = 2, BorderStyle = BorderStyle.Dashed, BorderColor = "#DC143C" }
 
         };
 

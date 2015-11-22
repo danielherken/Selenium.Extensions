@@ -1,4 +1,5 @@
 ﻿using System;
+using Selenium.Extensions.Interfaces;
 
 namespace Selenium.Extensions
 {

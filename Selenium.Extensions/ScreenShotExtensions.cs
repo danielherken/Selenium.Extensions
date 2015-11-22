@@ -4,15 +4,19 @@ using System.Drawing;
 using System.IO;
 using System.Threading;
 using OpenQA.Selenium;
+using Selenium.Extensions.Interfaces;
 
 namespace Selenium.Extensions
 {
-    /// <summary>
-    ///     Bitmap parsing class.
-    /// </summary>
-    public class FullScreenShot
+    public class ScreenShotExtensions
     {
 
+        /// <summary>
+        /// Gets the full screen shot.
+        /// </summary>
+        /// <param name="driver">The driver.</param>
+        /// <param name="testSettings">The test settings.</param>
+        /// <returns></returns>
         public static Bitmap GetFullScreenShot(ITestWebDriver driver, TestSettings testSettings)
         {
             Bitmap stitchedImage = null;

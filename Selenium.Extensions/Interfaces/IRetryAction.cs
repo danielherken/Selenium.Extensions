@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace Selenium.Extensions
+namespace Selenium.Extensions.Interfaces
 {
     public interface IRetryAction
     {

@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Drawing;
 using OpenQA.Selenium;
 
-namespace Selenium.Extensions
+namespace Selenium.Extensions.Interfaces
 {
     public interface ITestWebDriver
     {
@@ -14,10 +15,11 @@ namespace Selenium.Extensions
         IMouse Mouse { get; }
         string PageSource { get; }
         TestSettings Settings { get; }
+        IWebElement PreviousElement { get; set; }
+        IWebElement CurrentElement { get; set; }
         string Title { get; }
         string Url { get; set; }
         ReadOnlyCollection<string> WindowHandles { get; }
-
         void Close();
         void Dispose();
         object ExecuteAsyncScript(string script, params object[] args);
@@ -25,6 +27,7 @@ namespace Selenium.Extensions
         IWebElement FindElement(By by);
         ReadOnlyCollection<IWebElement> FindElements(By by);
         Screenshot GetScreenshot();
+        void SaveScreenShot(); 
         IOptions Manage();
         INavigation Navigate();
         void Quit();
@@ -41,7 +44,7 @@ namespace Selenium.Extensions
         IWebElement SelectElementByText(By locator, string text);
         ReadOnlyCollection<IWebElement> SelectElementsByText(By locator, string text);
         void WaitForAjax();
-        IWebElement WaitElement(By locator);
+        void Wait(TimeSpan? timeSpan = null);
         IWebElement WaitforElement(By locator, TimeSpan timeSpan);
         IWebElement WaitElementDisappear(By locator);
         IWebElement WaitElementDisappear(By locator, TimeSpan timeSpan);
@@ -51,11 +54,15 @@ namespace Selenium.Extensions
         IWebElement WaitTillElementIsVisible(By locator, TimeSpan timeSpan);
         IWebElement SelectElementByAttribute(By locator, string attribute, string value);
         IReadOnlyCollection<IWebElement> SelectElementsByAttribute(By locator, string attribute, string value);
-
         void SwitchToAlert(AlertAction alertAction);
         void SwitchToPrompt(AlertAction alertAction,string promptValue);
         void SwitchToWindow(string windowTitle);
         void ClosePopUpWindow();
-        void TakeAndSaveScreenShot();
+        void Highlight(By locator, bool removeHighlight = false);
+        void Highlight(IWebElement webElement, bool removeHighlight = false);
+        void LogMessage(LogLevel level, string message);
+        bool UsingjQuery();
+        Size GetViewport();
+        void SelectFile(string directoryName, string[] files);
     }
 }
