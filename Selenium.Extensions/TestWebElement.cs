@@ -63,6 +63,8 @@ namespace Selenium.Extensions
             _context = new TestSearchContext(_settings, selfSelector, this, _elementLookup);
         }
 
+        public By FoundBy => _selfSelector;
+
         /// <summary>
         /// Finds the element by class name.
         /// </summary>
@@ -373,6 +375,7 @@ namespace Selenium.Extensions
             return _context.FindElements(@by);
         }
 
+
         public void Clear()
         {
             WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Clearing element for " + _selfSelector);
@@ -382,7 +385,30 @@ namespace Selenium.Extensions
         public void SendKeys(string text)
         {
             WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Sending keys: [{text}] to " + _selfSelector);
-            Interact(elmnt => elmnt.SendKeys(text));
+            if (text.Length > 1)
+            {
+                Interact(elmnt =>
+                {
+                    elmnt.Clear();
+                    elmnt.SendKeys(text);
+                });
+
+            }
+            else
+            {
+                Interact(elmnt => elmnt.SendKeys(text));
+            }
+        }
+
+        public void SendKeys(string[] keyCollextion)
+        {
+            string textToSend = "";
+            foreach (var key in keyCollextion)
+            {
+                textToSend = textToSend + key;
+                Interact(elmnt => elmnt.SendKeys(key));
+            }
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Sending keys: [{textToSend}] to " + _selfSelector);
         }
 
         public void SetText(string text)
@@ -579,6 +605,27 @@ namespace Selenium.Extensions
         {
             WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, $"Getting parent element for: [{_selfSelector}]");
             return Interact(elmnt => (elmnt).FindElement(By.XPath("./parent::*")));
+        }
+
+        public IWebElement GetParentOfType(string type)
+        {
+            IWebElement element = this;
+            try
+            {
+
+                do
+                {
+                    element = element.FindElement(By.XPath("./parent::*")); //parent relative to current element
+
+                } while 
+                (
+                    element.TagName != type
+                );
+            }
+            catch (NoSuchElementException)
+            {
+            }
+            return element;
         }
 
         public IWebElement GetChild()

@@ -757,9 +757,13 @@ namespace Selenium.Extensions
         public void SwitchToWindow(string windowTitle)
         {
             LogMessage(LogLevel.Verbose, $"Switching to window: [{windowTitle}]");
-            var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(5));
+            var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
             wait.IgnoreExceptionTypes(typeof(NoAlertPresentException));
             wait.Until(driver => _driver.WindowHandles.Count > 1);
+
+            //var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
+            //wait.IgnoreExceptionTypes(typeof(NoAlertPresentException));
+            //wait.Until(ExpectedConditions.);
 
 
             var windowHandles = _driver.WindowHandles;
@@ -848,6 +852,23 @@ namespace Selenium.Extensions
         public void SelectFile(string directoryName, string[] files)
         {
             DialogManager.SelectFiles(Settings.DriverType, directoryName, files);
+        }
+
+        public void SwitchToIframe(int index, By childLocator)
+        {
+            if (childLocator != null)
+            {
+                var childElement = _driver.FindElement(childLocator) as ITestWebElement;
+                var iframe = childElement?.GetParentOfType("iframe") as ITestWebElement;
+                if (iframe != null)
+                {
+                    var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
+                    wait.IgnoreExceptionTypes(typeof(NoAlertPresentException));
+                    wait.Until(ExpectedConditions.FrameToBeAvailableAndSwitchToIt(iframe.FoundBy));
+                }
+            }
+
+            _driver.SwitchTo().Frame(index);
         }
 
         public string Url

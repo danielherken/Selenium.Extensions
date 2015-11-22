@@ -64,5 +64,6 @@ namespace Selenium.Extensions.Interfaces
         bool UsingjQuery();
         Size GetViewport();
         void SelectFile(string directoryName, string[] files);
+        void SwitchToIframe(int index, By childLocator);
     }
 }

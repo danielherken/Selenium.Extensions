@@ -17,6 +17,7 @@ namespace Selenium.Extensions.Interfaces
         string TagName { get; }
         string Text { get; }
         IWebElement WrappedElement { get; }
+        By FoundBy { get; }
         void Clear();
         void Click();
         IWebElement FindElement(By by);
@@ -41,6 +42,7 @@ namespace Selenium.Extensions.Interfaces
         string GetCssValue(string propertyName);
         Screenshot GetScreenshot();
         void SendKeys(string text);
+        void SendKeys(string[] keyCollextion);
         void SetText(string text);
         void Submit();
         IWebDriver GetDriver();
@@ -76,6 +78,7 @@ namespace Selenium.Extensions.Interfaces
         void MouseOver();
         void MouseUp();
         void MouseDown();
+        IWebElement GetParentOfType(string type);
 
     }
 
