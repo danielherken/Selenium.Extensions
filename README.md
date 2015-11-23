@@ -1,5 +1,7 @@
 Selenium Web Driver Extensions
 ==============================
+
+[![Join the chat at https://gitter.im/Jayman1305/Selenium.Extensions](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Jayman1305/Selenium.Extensions?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 <p>Contains a set of functions built around selenium to make writing and running tests easier. There are 3 types of tests defined in the sample. You will need a evaluation version of MultiBrowser available from http://multibrowser.com to run the Standalone Browsers and Emulator browser tests. </br>You can run the Installed tests with no additional software. To prepare your test enviroment you will need to run the following commands in the Nuget Package Manager Console:</p>
 
 - PM> Install-Package xunit
