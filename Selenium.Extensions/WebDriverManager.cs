@@ -486,6 +486,9 @@ namespace Selenium.Extensions
                 BinaryLocation =
                     Path.Combine(installPathValue ?? @"C:\Program Files (x86)\MultiBrowser", "MultiBrowser Emulator.exe")
             };
+#if DEBUG
+                options.BinaryLocation = @"C:\Projects\MobileEmulator\bin\Debug\x64\MultiBrowser Emulator.exe";
+#endif
             var driver = new ChromeDriver(driverService, options, testSettings.TimeoutTimeSpan);
             if (testSettings.DeleteAllCookies)
             {
