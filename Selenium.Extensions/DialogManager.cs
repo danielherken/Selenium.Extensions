@@ -37,6 +37,9 @@ namespace Selenium.Extensions
                 case WebDriverType.InternetExplorerDriver:
                     lookForTitle = "Choose File to Upload";
                     break;
+                case WebDriverType.EmulatorDriver:
+                    lookForTitle = "Open File";
+                    break;
             }
 
             bool success;

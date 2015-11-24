@@ -28,7 +28,8 @@ namespace Selenium.Extensions
         [Description("Opera")] OperaDriver,
         //PhantomJsDriver,
         [Description("Remote")] RemoteWebDriver,
-        [Description("Safari")] SafariDriver
+        [Description("Safari")] SafariDriver,
+        [Description("Emulator")]EmulatorDriver,
     }
 
     //public enum TestBrowser

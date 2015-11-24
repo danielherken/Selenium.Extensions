@@ -13,7 +13,7 @@ using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.IE;
 using OpenQA.Selenium.Opera;
-using OpenQA.Selenium.Remote;
+using Selenium.Extensions.Emulators;
 using OpenQA.Selenium.Safari;
 using OpenQA.Selenium.Support.Events;
 using Selenium.Extensions.Exceptions;
@@ -486,9 +486,43 @@ namespace Selenium.Extensions
                 BinaryLocation =
                     Path.Combine(installPathValue ?? @"C:\Program Files (x86)\MultiBrowser", "MultiBrowser Emulator.exe")
             };
+
+            var emulatorSettings = MultiBrowser.GetMultiBrowserEmulators(emulator);
+            if (orientation == DeviceOrientation.Portrait)
+            {
+                options.AddAdditionalCapability("mobileEmulation", new
+                {
+                    deviceMetrics = new
+                    {
+                        width = emulatorSettings.DeviceWidth,
+                        height = emulatorSettings.DeviceHeight,
+                        pixelRatio = emulatorSettings.DevicePixelRatio
+                    },
+                    userAgent = emulatorSettings.DeviceUserAgent
+                });
+            }
+            else
+            {
+                options.AddAdditionalCapability("mobileEmulation", new
+                {
+                    deviceMetrics = new
+                    {
+                        width = emulatorSettings.DeviceHeight,
+                        height = emulatorSettings.DeviceWidth,
+                        pixelRatio = emulatorSettings.DevicePixelRatio
+                    },
+                    userAgent = emulatorSettings.DeviceUserAgent
+                });
+            }
 #if DEBUG
-                options.BinaryLocation = @"C:\Projects\MobileEmulator\bin\Debug\x64\MultiBrowser Emulator.exe";
+            options.BinaryLocation = @"C:\Projects\MobileEmulator\bin\Debug\x64\MultiBrowser Emulator.exe";
 #endif
+            string authServerWhitelist = "auth-server-whitelist=" + testSettings.TestUri.Authority.Replace("www", "*");
+            string startUrl = "startUrl=" + testSettings.TestUri.AbsoluteUri;
+            string selectedEmulator = "emulator=" + emulatorSettings.EmulatorArgument;
+            
+            var argsToPass = new[] { "test-type", "start-maximized", "no-default-browser-check", "allow-no-sandbox-job", "disable-component-update", "disable-translate", "disable-hang-monitor", authServerWhitelist, startUrl, selectedEmulator };
+            options.AddArguments(argsToPass);
             var driver = new ChromeDriver(driverService, options, testSettings.TimeoutTimeSpan);
             if (testSettings.DeleteAllCookies)
             {

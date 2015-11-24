@@ -74,6 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DialogHelper.cs" />
+    <Compile Include="Emulators\MultiBrowser.cs" />
     <Compile Include="Exceptions\DriverNotFoundException.cs" />
     <Compile Include="Exceptions\DriverBlockedException.cs" />
     <Compile Include="Exceptions\TestConfigurationException.cs" />
@@ -111,10 +112,10 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /y C:\Projects\Selenium.Extensions\Selenium.Extensions\bin\Release\*.dll "C:\Projects\Selenium.Extensions\NuGet\lib\net45"</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

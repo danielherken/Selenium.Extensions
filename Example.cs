@@ -99,7 +99,7 @@ namespace MultiBrowser.Test.SiteTest
         public void RunMultiBrowserEmulatorTests(Emulator emulator, DeviceOrientation orientation)
         {
             _testSettings.TestType = TestType.EmulatorBrowser;
-            _testSettings.DriverType = WebDriverType.ChromeDriver;
+            _testSettings.DriverType = WebDriverType.EmulatorBrowser;
             _testSettings.TestDirectory = _testSettings.TestDirectory + "\\Emulator Browsers\\";
             _driver = WebDriverManager.InitializeMultiBrowserEmulatorDriver(_testSettings, emulator, orientation, _testOutputHelper);
             if (_driver == null)
