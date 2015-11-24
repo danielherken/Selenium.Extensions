@@ -253,10 +253,10 @@ namespace MultiBrowser.Test.SiteTest
             inputtext5.Focus();
             audio1.PerformMediaAction(MediaAction.Pause);
             inputtext5.SendKeys(new[] { "N", "e", "w", " " });
-            _driver.Wait(TimeSpan.FromSeconds(2));
+            _driver.Wait(TimeSpan.FromSeconds(5));
             var li2 = _driver.FindElement(By.CssSelector("#home-ajax-suggestions > LI:nth-child(2)")) as ITestWebElement;
             li2.Click();
-            _driver.Wait(TimeSpan.FromSeconds(2));
+            _driver.Wait(TimeSpan.FromSeconds(3));
             Assert.Equal("New York", inputtext5.GetAttribute("value"));
 
         }
