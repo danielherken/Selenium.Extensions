@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -66,7 +66,8 @@ namespace Selenium.Extensions
                     string driverLocation = Path.Combine(AssemblyDirectory, "chromedriver.exe");
                     driverLocation = ValidateDriverPresentOrUnblocked(WebDriverType.ChromeDriver, driverLocation);
                     testSettings.BrowserName = "Chrome";
-                    var driverService = ChromeDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation), Path.GetFileName(driverLocation));
+                    var driverService = ChromeDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation),
+                        Path.GetFileName(driverLocation));
                     var options = new ChromeOptions
                     {
                         LeaveBrowserRunning = false
@@ -95,8 +96,13 @@ namespace Selenium.Extensions
                 case WebDriverType.FirefoxDriver:
                 {
                     testSettings.BrowserName = "Firefox";
-                    var driverService = FirefoxDriverService.CreateDefaultService();
-                    var options = new FirefoxOptions();
+                    string winePath =
+                        Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
+                        "\\MultiBrowser\\Drivers\\FirefoxDrivers\\wires-0.6.2-win\\";
+                    var driverService = FirefoxDriverService.CreateDefaultService(winePath);
+                        //var driverService = FirefoxDriverService.CreateDefaultService();
+                        var options = new FirefoxOptions();
+                    options.IsMarionette = true;
                     var driver = new FirefoxDriver(driverService, options, testSettings.TimeoutTimeSpan);
                     if (testSettings.DeleteAllCookies)
                     {
@@ -120,8 +126,11 @@ namespace Selenium.Extensions
                         driverName = "IEDriverServer64.exe";
                     }
                     string driverLocation = Path.Combine(AssemblyDirectory, driverName);
-                    driverLocation = ValidateDriverPresentOrUnblocked(WebDriverType.InternetExplorerDriver,driverLocation);
-                    var driverService = InternetExplorerDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation), Path.GetFileName(driverLocation));
+                    driverLocation = ValidateDriverPresentOrUnblocked(WebDriverType.InternetExplorerDriver,
+                        driverLocation);
+                    var driverService =
+                        InternetExplorerDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation),
+                            Path.GetFileName(driverLocation));
                     var options = new InternetExplorerOptions
                     {
                         IgnoreZoomLevel = true,
@@ -149,10 +158,11 @@ namespace Selenium.Extensions
                 }
                 case WebDriverType.EdgeDriver:
                 {
-                        string driverLocation = Path.Combine(AssemblyDirectory, "MicrosoftWebDriver.exe");
-                        driverLocation = ValidateDriverPresentOrUnblocked(WebDriverType.EdgeDriver,driverLocation);
-                        testSettings.BrowserName = "Edge";
-                    var driverService = EdgeDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation), Path.GetFileName(driverLocation));
+                    string driverLocation = Path.Combine(AssemblyDirectory, "MicrosoftWebDriver.exe");
+                    driverLocation = ValidateDriverPresentOrUnblocked(WebDriverType.EdgeDriver, driverLocation);
+                    testSettings.BrowserName = "Edge";
+                    var driverService = EdgeDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation),
+                        Path.GetFileName(driverLocation));
                     var options = new EdgeOptions
                     {
                         PageLoadStrategy = EdgePageLoadStrategy.Default
@@ -283,7 +293,8 @@ namespace Selenium.Extensions
                     var multiBrowserExe =
                         Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
                         "\\MultiBrowser\\MB_Chrome" + browserVersion + ".exe";
-                    var driverService = ChromeDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation), Path.GetFileName(driverLocation));
+                    var driverService = ChromeDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation),
+                        Path.GetFileName(driverLocation));
                     var options = new ChromeOptions
                     {
                         LeaveBrowserRunning = false,
@@ -335,14 +346,20 @@ namespace Selenium.Extensions
                 case WebDriverType.InternetExplorerDriver:
                 {
                     testSettings.BrowserName = "IE " + browserVersion;
-                    var driverLocation = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                                       "\\MultiBrowser\\Drivers\\IEDrivers\\x86\\IEDriverServer.exe";
-                    if (Environment.Is64BitProcess)
+                    string driverLocation;
+                    if (!Environment.Is64BitProcess)
                     {
-                            driverLocation = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                                       "\\MultiBrowser\\Drivers\\IEDrivers\\x64\\IEDriverServer64.exe";
+                        driverLocation = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
+                                         "\\MultiBrowser\\Drivers\\IEDrivers\\x86\\IEDriverServer.exe";
                     }
-                    var driverService = InternetExplorerDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation), Path.GetFileName(driverLocation));
+                    else
+                    {
+                        driverLocation = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
+                                         "\\MultiBrowser\\Drivers\\IEDrivers\\x64\\IEDriverServer64.exe";
+                    }
+                    var driverService =
+                        InternetExplorerDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation),
+                            Path.GetFileName(driverLocation));
                     var options = new InternetExplorerOptions
                     {
                         IgnoreZoomLevel = true,
@@ -453,16 +470,19 @@ namespace Selenium.Extensions
         /// <param name="orientation">The device orientation.</param>
         /// <param name="testOutputHelper">The test output helper.</param>
         /// <returns></returns>
-        public static ITestWebDriver InitializeMultiBrowserEmulatorDriver(TestSettings testSettings, Emulator emulator,
-            DeviceOrientation orientation, ITestOutputHelper testOutputHelper)
+        public static ITestWebDriver InitializeMultiBrowserEmulatorDriver(TestSettings testSettings, Emulator emulator, DeviceOrientation orientation, ITestOutputHelper testOutputHelper)
         {
             ScreenShotCounter = 0;
             TestOutputHelper = testOutputHelper;
             testSettings.BrowserName = emulator + " " + orientation;
             testSettings = ValidateSavePaths(testSettings);
-            string driverLocation = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                                "\\MultiBrowser\\Drivers\\ChromeDrivers\\2.20\\chromedriver.exe";
-            var driverService = ChromeDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation), Path.GetFileName(driverLocation));
+            //string driverLocation = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
+            //                        "\\MultiBrowser\\Drivers\\ChromeDrivers\\2.20\\chromedriver.exe";
+            string driverLocation = Path.Combine(AssemblyDirectory, "chromedriver.exe");
+            driverLocation = ValidateDriverPresentOrUnblocked(WebDriverType.ChromeDriver, driverLocation);
+
+            var driverService = ChromeDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation),
+                Path.GetFileName(driverLocation));
             ValidateDriverPresentOrUnblocked(WebDriverType.ChromeDriver, driverLocation);
 
             var currentInstallPath = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\MultiBrowser", false) ??
@@ -480,6 +500,10 @@ namespace Selenium.Extensions
                     installPathValue = installPathValue + "\\";
                 }
             }
+
+#if DEBUG
+            installPathValue = @"C:\Projects\MobileEmulator\bin\Debug\x64\";
+#endif
             var options = new ChromeOptions
             {
                 LeaveBrowserRunning = false,
@@ -490,29 +514,49 @@ namespace Selenium.Extensions
             var emulatorSettings = MultiBrowser.GetMultiBrowserEmulators(emulator);
             if (orientation == DeviceOrientation.Portrait)
             {
-                options.AddAdditionalCapability("mobileEmulation", new
+                var mobileEmulationSettings = new ChromeMobileEmulationDeviceSettings
                 {
-                    deviceMetrics = new
-                    {
-                        width = emulatorSettings.DeviceWidth,
-                        height = emulatorSettings.DeviceHeight,
-                        pixelRatio = emulatorSettings.DevicePixelRatio
-                    },
-                    userAgent = emulatorSettings.DeviceUserAgent
-                });
+                    UserAgent = emulatorSettings.DeviceUserAgent,
+                    Width = emulatorSettings.DeviceWidth,
+                    Height = emulatorSettings.DeviceHeight,
+                    EnableTouchEvents = true,
+                    PixelRatio = emulatorSettings.DevicePixelRatio
+                };
+                options.EnableMobileEmulation(mobileEmulationSettings);
+                //options.AddAdditionalCapability("mobileEmulation", new
+                //{
+                //    deviceMetrics = new
+                //    {
+                //        width = emulatorSettings.DeviceWidth,
+                //        height = emulatorSettings.DeviceHeight,
+                //        pixelRatio = emulatorSettings.DevicePixelRatio
+                //    },
+                //    userAgent = emulatorSettings.DeviceUserAgent
+                //});
             }
             else
             {
-                options.AddAdditionalCapability("mobileEmulation", new
+                var mobileEmulationSettings = new ChromeMobileEmulationDeviceSettings
                 {
-                    deviceMetrics = new
-                    {
-                        width = emulatorSettings.DeviceHeight,
-                        height = emulatorSettings.DeviceWidth,
-                        pixelRatio = emulatorSettings.DevicePixelRatio
-                    },
-                    userAgent = emulatorSettings.DeviceUserAgent
-                });
+                    UserAgent = emulatorSettings.DeviceUserAgent,
+                    Width = emulatorSettings.DeviceHeight,
+                    Height = emulatorSettings.DeviceWidth,
+                    EnableTouchEvents = true,
+                    PixelRatio = emulatorSettings.DevicePixelRatio
+                };
+                options.EnableMobileEmulation(mobileEmulationSettings);
+                
+
+                //options.AddAdditionalCapability("mobileEmulation", new
+                //{
+                //    deviceMetrics = new
+                //    {
+                //        width = emulatorSettings.DeviceHeight,
+                //        height = emulatorSettings.DeviceWidth,
+                //        pixelRatio = emulatorSettings.DevicePixelRatio
+                //    },
+                //    userAgent = emulatorSettings.DeviceUserAgent
+                //});
             }
 #if DEBUG
             options.BinaryLocation = @"C:\Projects\MobileEmulator\bin\Debug\x64\MultiBrowser Emulator.exe";
@@ -520,8 +564,13 @@ namespace Selenium.Extensions
             string authServerWhitelist = "auth-server-whitelist=" + testSettings.TestUri.Authority.Replace("www", "*");
             string startUrl = "startUrl=" + testSettings.TestUri.AbsoluteUri;
             string selectedEmulator = "emulator=" + emulatorSettings.EmulatorArgument;
-            
-            var argsToPass = new[] { "test-type", "start-maximized", "no-default-browser-check", "allow-no-sandbox-job", "disable-component-update", "disable-translate", "disable-hang-monitor", authServerWhitelist, startUrl, selectedEmulator };
+
+            var argsToPass = new[]
+            {
+                "test-type", "start-maximized", "no-default-browser-check", "allow-no-sandbox-job",
+                "disable-component-update", "disable-translate", "disable-hang-monitor", authServerWhitelist, startUrl,
+                selectedEmulator
+            };
             options.AddArguments(argsToPass);
             var driver = new ChromeDriver(driverService, options, testSettings.TimeoutTimeSpan);
             if (testSettings.DeleteAllCookies)
@@ -700,7 +749,7 @@ namespace Selenium.Extensions
                                         "\\MultiBrowser\\Drivers\\ChromeDrivers\\";
                     if (Directory.Exists(chromeDrivers))
                     {
-                        var driverFolders =  Directory.GetDirectories(chromeDrivers);
+                        var driverFolders = Directory.GetDirectories(chromeDrivers);
                         List<Version> driverVersions = new List<Version>();
                         foreach (var driverFolder in driverFolders)
                         {
@@ -712,7 +761,8 @@ namespace Selenium.Extensions
                                     string[] versionValues = driverValue.Split('.');
                                     if (versionValues.Count() > 1)
                                     {
-                                        Version driverVersion = new Version(Convert.ToInt32(versionValues[0]), Convert.ToInt32(versionValues[1]));
+                                        Version driverVersion = new Version(Convert.ToInt32(versionValues[0]),
+                                            Convert.ToInt32(versionValues[1]));
                                         driverVersions.Add(driverVersion);
                                     }
                                 }
@@ -733,11 +783,11 @@ namespace Selenium.Extensions
                 else if (webDriverType == WebDriverType.InternetExplorerDriver)
                 {
                     var ieDriverPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                                        "\\MultiBrowser\\Drivers\\IEDrivers\\x86\\IEDriverServer.exe";
+                                       "\\MultiBrowser\\Drivers\\IEDrivers\\x86\\IEDriverServer.exe";
                     if (Environment.Is64BitProcess)
                     {
                         ieDriverPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                                        "\\MultiBrowser\\Drivers\\IEDrivers\\x64\\IEDriverServer64.exe";
+                                       "\\MultiBrowser\\Drivers\\IEDrivers\\x64\\IEDriverServer64.exe";
                     }
                     if (File.Exists(ieDriverPath))
                     {
@@ -747,7 +797,7 @@ namespace Selenium.Extensions
                 else if (webDriverType == WebDriverType.EdgeDriver)
                 {
                     var edgeDriverPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                                        "\\MultiBrowser\\Drivers\\MicrosoftWebDriver\\MicrosoftWebDriver.exe";
+                                         "\\MultiBrowser\\Drivers\\MicrosoftWebDriver\\MicrosoftWebDriver.exe";
                     if (File.Exists(edgeDriverPath))
                     {
                         driverLocation = edgeDriverPath;
