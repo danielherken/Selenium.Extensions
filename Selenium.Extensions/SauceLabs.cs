@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using OpenQA.Selenium.Remote;
 using Selenium.Extensions.Exceptions;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Firefox;
+using OpenQA.Selenium.IE;
+using OpenQA.Selenium.Edge;
 
 namespace Selenium.Extensions
 {
@@ -45,27 +49,19 @@ namespace Selenium.Extensions
                 case "firefox":
                 case "internet explorer":
                 case "microsoftedge":
-                case "opera":
-                case "safari":
                     switch (apiName)
                     {
                         case "chrome":
-                            caps = DesiredCapabilities.Chrome();
+                            caps = (DesiredCapabilities)new ChromeOptions().ToCapabilities();
                             break;
                         case "firefox":
-                            caps = DesiredCapabilities.Firefox();
+                            caps = (DesiredCapabilities) new FirefoxOptions().ToCapabilities();
                             break;
                         case "internet explorer":
-                            caps = DesiredCapabilities.InternetExplorer();
+                            caps = (DesiredCapabilities)new InternetExplorerOptions().ToCapabilities();
                             break;
                         case "microsoftedge":
-                            caps = DesiredCapabilities.Edge();
-                            break;
-                        case "opera":
-                            caps = DesiredCapabilities.Opera();
-                            break;
-                        case "safari":
-                            caps = DesiredCapabilities.Safari();
+                            caps = (DesiredCapabilities)new EdgeOptions().ToCapabilities();
                             break;
                         default:
                             caps = DesiredCapabilities.HtmlUnit();

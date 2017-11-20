@@ -1129,5 +1129,11 @@ namespace Selenium.Extensions
         {
             return TestInteractionWrapper.Interact(ref _element, _selfSelector, () => _elementLookup(), query);
         }
+
+        public string GetProperty(string propertyName)
+        {
+            WebDriverManager.TestWebDriver.LogMessage(LogLevel.Verbose, "Getting property for " + _selfSelector);
+            return Interact(elmnt => elmnt.GetProperty(propertyName));
+        }
     }
 }

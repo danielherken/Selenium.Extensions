@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Selenium.Extensions")]
 [assembly: AssemblyDescription("Extension methods for running MultiBrowser Selenium WebDriver tests")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("TWD Solutions (Pte) Ltd")]
+[assembly: AssemblyCompany("Position Fixed UG")]
 [assembly: AssemblyProduct("MultiBrowser")]
-[assembly: AssemblyCopyright("Copyright © TWD Solutions (Pte) Ltd 2015")]
+[assembly: AssemblyCopyright("Copyright © Position Fixed UG 2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -35,5 +35,5 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 
-[assembly: AssemblyVersion("1.0.6.0")]
-[assembly: AssemblyFileVersion("1.0.6.0")]
+[assembly: AssemblyVersion("1.3.4.0")]
+[assembly: AssemblyFileVersion("1.3.4.0")]

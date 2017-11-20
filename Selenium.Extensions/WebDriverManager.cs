@@ -84,7 +84,7 @@ namespace Selenium.Extensions
                     {
                         firingDriver.Manage().Cookies.DeleteAllCookies();
                     }
-                    driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
+                    driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
                     if (testSettings.MaximiseBrowser)
                     {
                         firingDriver.Manage().Window.Maximize();
@@ -96,19 +96,15 @@ namespace Selenium.Extensions
                 case WebDriverType.FirefoxDriver:
                 {
                     testSettings.BrowserName = "Firefox";
-                    string winePath =
-                        Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                        "\\MultiBrowser\\Drivers\\FirefoxDrivers\\wires-0.6.2-win\\";
-                    var driverService = FirefoxDriverService.CreateDefaultService(winePath);
-                        //var driverService = FirefoxDriverService.CreateDefaultService();
-                        var options = new FirefoxOptions();
-                    options.IsMarionette = true;
+                    var driverService = FirefoxDriverService.CreateDefaultService();
+                    var options = new FirefoxOptions();
+                    options.UseLegacyImplementation = false;
                     var driver = new FirefoxDriver(driverService, options, testSettings.TimeoutTimeSpan);
                     if (testSettings.DeleteAllCookies)
                     {
                         driver.Manage().Cookies.DeleteAllCookies();
                     }
-                    driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
+                    driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
                     if (testSettings.MaximiseBrowser)
                     {
                         driver.Manage().Window.Maximize();
@@ -147,7 +143,7 @@ namespace Selenium.Extensions
                     {
                         driver.Manage().Cookies.DeleteAllCookies();
                     }
-                    driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
+                    driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
                     if (testSettings.MaximiseBrowser)
                     {
                         driver.Manage().Window.Maximize();
@@ -163,16 +159,13 @@ namespace Selenium.Extensions
                     testSettings.BrowserName = "Edge";
                     var driverService = EdgeDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation),
                         Path.GetFileName(driverLocation));
-                    var options = new EdgeOptions
-                    {
-                        PageLoadStrategy = EdgePageLoadStrategy.Default
-                    };
+                        var options = new EdgeOptions();
                     var driver = new EdgeDriver(driverService, options, testSettings.TimeoutTimeSpan);
                     if (testSettings.DeleteAllCookies)
                     {
                         driver.Manage().Cookies.DeleteAllCookies();
                     }
-                    driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
+                    driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
                     if (testSettings.MaximiseBrowser)
                     {
                         driver.Manage().Window.Maximize();
@@ -194,7 +187,7 @@ namespace Selenium.Extensions
                     {
                         driver.Manage().Cookies.DeleteAllCookies();
                     }
-                    driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
+                    driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
                     if (testSettings.MaximiseBrowser)
                     {
                         driver.Manage().Window.Maximize();
@@ -212,7 +205,7 @@ namespace Selenium.Extensions
                     {
                         driver.Manage().Cookies.DeleteAllCookies();
                     }
-                    driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
+                    driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
                     if (testSettings.MaximiseBrowser)
                     {
                         driver.Manage().Window.Maximize();
@@ -311,7 +304,7 @@ namespace Selenium.Extensions
                     {
                         driver.Manage().Cookies.DeleteAllCookies();
                     }
-                    driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
+                    driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
                     if (testSettings.MaximiseBrowser)
                     {
                         driver.Manage().Window.Maximize();
@@ -334,7 +327,7 @@ namespace Selenium.Extensions
                     {
                         driver.Manage().Cookies.DeleteAllCookies();
                     }
-                    driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
+                    driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
                     if (testSettings.MaximiseBrowser)
                     {
                         driver.Manage().Window.Maximize();
@@ -376,7 +369,7 @@ namespace Selenium.Extensions
                     {
                         driver.Manage().Cookies.DeleteAllCookies();
                     }
-                    driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
+                    driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
                     if (testSettings.MaximiseBrowser)
                     {
                         driver.Manage().Window.Maximize();
@@ -390,16 +383,13 @@ namespace Selenium.Extensions
                     testSettings.BrowserName = "Edge " + browserVersion;
                     var driverService = EdgeDriverService.CreateDefaultService(AssemblyDirectory,
                         "MicrosoftWebDriver.exe");
-                    var options = new EdgeOptions
-                    {
-                        PageLoadStrategy = EdgePageLoadStrategy.Default
-                    };
+                        var options = new EdgeOptions();
                     var driver = new EdgeDriver(driverService, options, testSettings.TimeoutTimeSpan);
                     if (testSettings.DeleteAllCookies)
                     {
                         driver.Manage().Cookies.DeleteAllCookies();
                     }
-                    driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
+                    driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
                     if (testSettings.MaximiseBrowser)
                     {
                         driver.Manage().Window.Maximize();
@@ -425,31 +415,7 @@ namespace Selenium.Extensions
                     {
                         driver.Manage().Cookies.DeleteAllCookies();
                     }
-                    driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
-                    if (testSettings.MaximiseBrowser)
-                    {
-                        driver.Manage().Window.Maximize();
-                    }
-                    var extendedWebDriver = new TestWebDriver(driver, testSettings, TestOutputHelper);
-                    TestWebDriver = extendedWebDriver;
-                    return extendedWebDriver;
-                }
-                case WebDriverType.SafariDriver:
-                {
-                    testSettings.BrowserName = "Firefox " + browserVersion;
-                    var multiBrowserExe =
-                        Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                        "\\MultiBrowser\\MB_Chrome" + browserVersion + ".exe";
-                    var options = new SafariOptions
-                    {
-                        SafariLocation = multiBrowserExe
-                    };
-                    var driver = new SafariDriver(options);
-                    if (testSettings.DeleteAllCookies)
-                    {
-                        driver.Manage().Cookies.DeleteAllCookies();
-                    }
-                    driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
+                    driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
                     if (testSettings.MaximiseBrowser)
                     {
                         driver.Manage().Window.Maximize();
@@ -577,7 +543,7 @@ namespace Selenium.Extensions
             {
                 driver.Manage().Cookies.DeleteAllCookies();
             }
-            driver.Manage().Timeouts().ImplicitlyWait(testSettings.TimeoutTimeSpan);
+            driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
             var extendedWebDriver = new TestWebDriver(driver, testSettings, TestOutputHelper);
             TestWebDriver = extendedWebDriver;
             return extendedWebDriver;
