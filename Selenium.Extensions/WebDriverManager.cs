@@ -53,40 +53,41 @@ namespace Selenium.Extensions
         /// <returns></returns>
         /// <exception cref="TestConfigurationException">The details you specified are invalid</exception>
         /// <exception cref="TestConfigurationException">The details you specified are invalid</exception>
-        public static ITestWebDriver InitializeInstalledBrowserDriver(TestSettings testSettings, decimal browserVersion, ITestOutputHelper testOutputHelper)
+        public static ITestWebDriver InitializeBrowserDriver(TestSettings testSettings, decimal browserVersion, ITestOutputHelper testOutputHelper, bool isStandalone)
         {
             ScreenShotCounter = 0;
             TestOutputHelper = testOutputHelper;
             testSettings = ValidateSavePaths(testSettings);
+
             switch (testSettings.DriverType)
             {
                 case WebDriverType.ChromeDriver:
                     {
-                        return CreateInstalledChromeDriver(testSettings, Convert.ToInt32(browserVersion));
+                        return CreateChromeDriver(testSettings, Convert.ToInt32(browserVersion), isStandalone);
                     }
                 case WebDriverType.FirefoxDriver:
                     {
-                        return CreateInstalledFirefoxDriver(testSettings, Convert.ToInt32(browserVersion));
+                        return CreateFirefoxDriver(testSettings, Convert.ToInt32(browserVersion), isStandalone);
                     }
                 case WebDriverType.InternetExplorerDriver:
                     {
-                        return CreateInstalledIEDriver(testSettings);
+                        return CreateIEDriver(testSettings, Convert.ToInt32(browserVersion));
                     }
                 case WebDriverType.EdgeDriver:
                     {
-                        return CreateInstalledEdgeDriver(testSettings, Convert.ToInt32(browserVersion));
+                        return CreateEdgeDriver(testSettings, Convert.ToInt32(browserVersion));
                     }
             }
             throw new TestConfigurationException("The details you specified are invalid");
         }
 
-        private static ITestWebDriver CreateInstalledEdgeDriver(TestSettings testSettings, int browserVersion)
+        private static ITestWebDriver CreateEdgeDriver(TestSettings testSettings, int browserVersion)
         {
             string driverLocation = GetMultiBrowserDriverBasePath();
             driverLocation = Path.Combine(driverLocation, "EdgeDrivers", browserVersion.ToString(), "MicrosoftWebDriver.exe");
             driverLocation = ValidateDriverPresentOrUnblocked(WebDriverType.EdgeDriver, driverLocation);
 
-            testSettings.BrowserName = "Edge";
+            testSettings.BrowserName = "Edge " + browserVersion;
             var driverService = EdgeDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation), Path.GetFileName(driverLocation));
 
             var options = new EdgeOptions();
@@ -109,9 +110,9 @@ namespace Selenium.Extensions
             return extendedWebDriver;
         }
 
-        private static ITestWebDriver CreateInstalledIEDriver(TestSettings testSettings)
+        private static ITestWebDriver CreateIEDriver(TestSettings testSettings, int browserVersion)
         {
-            testSettings.BrowserName = "IE";
+            testSettings.BrowserName = "IE " + browserVersion;
 
             string driverBasePath = GetMultiBrowserDriverBasePath();
 
@@ -160,20 +161,25 @@ namespace Selenium.Extensions
             return Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + "\\MultiBrowser\\Drivers\\";
         }
 
-        private static ITestWebDriver CreateInstalledChromeDriver(TestSettings testSettings, int browserVersion)
+        private static ITestWebDriver CreateChromeDriver(TestSettings testSettings, int browserVersion, bool isStandalone)
         {
             string driverLocation = GetMultiBrowserDriverBasePath();
             driverLocation = Path.Combine(driverLocation, "ChromeDrivers", browserVersion.ToString());
 
             driverLocation = ValidateDriverPresentOrUnblocked(WebDriverType.ChromeDriver, driverLocation);
 
-            testSettings.BrowserName = "Chrome";
+            testSettings.BrowserName = "Chrome " + browserVersion;
 
             var driverService = ChromeDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation), Path.GetFileName(driverLocation));
             var options = new ChromeOptions
             {
                 LeaveBrowserRunning = false
             };
+
+            if (isStandalone)
+            {
+                options.BinaryLocation = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + "\\MultiBrowser\\MB_Chrome" + browserVersion + ".exe";
+            }
 
             options.AddArgument("--no-default-browser-check");
             options.AddArgument("--test-type=browser");
@@ -204,9 +210,9 @@ namespace Selenium.Extensions
             return extendedWebDriver;
         }
 
-        private static ITestWebDriver CreateInstalledFirefoxDriver(TestSettings testSettings, int browserVersion)
+        private static ITestWebDriver CreateFirefoxDriver(TestSettings testSettings, int browserVersion, bool isStandalone)
         {
-            testSettings.BrowserName = "Firefox";
+            testSettings.BrowserName = "Firefox " + browserVersion;
 
             string driverLocation = GetMultiBrowserDriverBasePath();
             driverLocation = Path.Combine(driverLocation, "FirefoxDrivers", browserVersion.ToString());
@@ -214,6 +220,12 @@ namespace Selenium.Extensions
             var driverService = FirefoxDriverService.CreateDefaultService(driverLocation);
 
             var options = new FirefoxOptions();
+
+            if (isStandalone)
+            {
+                options.BrowserExecutableLocation = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + "\\MultiBrowser\\MB_Firefox" + browserVersion + ".exe";
+            }
+
             options.UseLegacyImplementation = false;
 
             var driver = new FirefoxDriver(driverService, options, testSettings.TimeoutTimeSpan);
@@ -223,7 +235,8 @@ namespace Selenium.Extensions
                 driver.Manage().Cookies.DeleteAllCookies();
             }
 
-            driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
+            if (browserVersion > 50)
+                driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
 
             if (testSettings.MaximiseBrowser)
             {
@@ -234,209 +247,6 @@ namespace Selenium.Extensions
             TestWebDriver = extendedWebDriver;
 
             return extendedWebDriver;
-        }
-
-        /// <summary>
-        /// Gets the web driver for standalone browsers.
-        /// </summary>
-        /// <param name="testSettings">The test settings.</param>
-        /// <param name="browserVersion">The browser version.</param>
-        /// <param name="testOutputHelper">The test output helper.</param>
-        /// <returns></returns>
-        public static ITestWebDriver InitializeStandaloneBrowserDriver(TestSettings testSettings, decimal browserVersion, ITestOutputHelper testOutputHelper)
-        {
-            ScreenShotCounter = 0;
-            TestOutputHelper = testOutputHelper;
-            testSettings = ValidateSavePaths(testSettings);
-            switch (testSettings.DriverType)
-            {
-                case WebDriverType.ChromeDriver:
-                {
-                    string driverLocation;
-                    switch (browserVersion.ToString(CultureInfo.InvariantCulture))
-                    {
-                        case "48":
-                        case "47":
-                        case "46":
-                        case "45":
-                        case "44":
-                        case "43":
-                            driverLocation =
-                                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                                "\\MultiBrowser\\Drivers\\ChromeDrivers\\2.20\\chromedriver.exe";
-                            break;
-                        case "42":
-                        case "41":
-                        case "40":
-                        case "39":
-                            driverLocation =
-                                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                                "\\MultiBrowser\\Drivers\\ChromeDrivers\\2.14\\chromedriver.exe";
-                            break;
-                        case "38":
-                        case "37":
-                        case "36":
-                            driverLocation =
-                                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                                "\\MultiBrowser\\Drivers\\ChromeDrivers\\2.11\\chromedriver.exe";
-                            break;
-                        case "35":
-                        case "34":
-                        case "33":
-                            driverLocation =
-                                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                                "\\MultiBrowser\\Drivers\\ChromeDrivers\\2.10\\chromedriver.exe";
-                            break;
-                        case "32":
-                        case "31":
-                        case "30":
-                            driverLocation =
-                                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                                "\\MultiBrowser\\Drivers\\ChromeDrivers\\2.8\\chromedriver.exe";
-                            break;
-                        default:
-                            driverLocation = Path.Combine(AssemblyDirectory, "chromedriver.exe");
-                            break;
-                    }
-
-                    ValidateDriverPresentOrUnblocked(WebDriverType.ChromeDriver, driverLocation);
-                    testSettings.BrowserName = "Chrome " + browserVersion;
-
-                    var multiBrowserExe = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + "\\MultiBrowser\\MB_Chrome" + browserVersion + ".exe";
-                    var driverService = ChromeDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation), Path.GetFileName(driverLocation));
-
-                    var options = new ChromeOptions
-                    {
-                        LeaveBrowserRunning = false,
-                        BinaryLocation = multiBrowserExe
-                    };
-
-                    options.AddArgument("--no-default-browser-check");
-                    options.AddArgument("--test-type=browser");
-                    options.AddArgument("--start-maximized");
-                    options.AddArgument("--allow-no-sandbox-job");
-                    options.AddArgument("--disable-component-update");
-                    options.AddArgument("--auth-server-whitelist=" + testSettings.TestUri.Authority.Replace("www", "*"));
-
-                    var driver = new ChromeDriver(driverService, options, testSettings.TimeoutTimeSpan);
-
-                    if (testSettings.DeleteAllCookies)
-                    {
-                        driver.Manage().Cookies.DeleteAllCookies();
-                    }
-
-                    driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
-
-                    if (testSettings.MaximiseBrowser)
-                    {
-                        driver.Manage().Window.Maximize();
-                    }
-
-                    var extendedWebDriver = new TestWebDriver(driver, testSettings, TestOutputHelper);
-                    TestWebDriver = extendedWebDriver;
-
-                    return extendedWebDriver;
-                }
-                case WebDriverType.FirefoxDriver:
-                {
-                    testSettings.BrowserName = "Firefox " + browserVersion;
-                    var multiBrowserExe = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + "\\MultiBrowser\\MB_Chrome" + browserVersion + ".exe";
-
-                    var driverService = FirefoxDriverService.CreateDefaultService();
-
-                    driverService.FirefoxBinaryPath = multiBrowserExe;
-
-                    var options = new FirefoxOptions();
-                    var driver = new FirefoxDriver(driverService, options, testSettings.TimeoutTimeSpan);
-
-                    if (testSettings.DeleteAllCookies)
-                    {
-                        driver.Manage().Cookies.DeleteAllCookies();
-                    }
-
-                    driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
-
-                    if (testSettings.MaximiseBrowser)
-                    {
-                        driver.Manage().Window.Maximize();
-                    }
-
-                    var extendedWebDriver = new TestWebDriver(driver, testSettings, TestOutputHelper);
-
-                    TestWebDriver = extendedWebDriver;
-                    return extendedWebDriver;
-                }
-                case WebDriverType.InternetExplorerDriver:
-                {
-                    testSettings.BrowserName = "IE " + browserVersion;
-                    string driverLocation;
-                    if (!Environment.Is64BitProcess)
-                    {
-                        driverLocation = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + "\\MultiBrowser\\Drivers\\IEDrivers\\x86\\IEDriverServer.exe";
-                    }
-                    else
-                    {
-                        driverLocation = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + "\\MultiBrowser\\Drivers\\IEDrivers\\x64\\IEDriverServer64.exe";
-                    }
-
-                    var driverService = InternetExplorerDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation), Path.GetFileName(driverLocation));
-
-                    var options = new InternetExplorerOptions
-                    {
-                        IgnoreZoomLevel = true,
-                        IntroduceInstabilityByIgnoringProtectedModeSettings = true,
-                        BrowserAttachTimeout = testSettings.TimeoutTimeSpan,
-                        RequireWindowFocus = true,
-                        ElementScrollBehavior = InternetExplorerElementScrollBehavior.Bottom,
-                        InitialBrowserUrl = testSettings.TestUri.AbsoluteUri,
-                        EnsureCleanSession = true,
-                        EnableNativeEvents = true
-                    };
-
-                    var driver = new InternetExplorerDriver(driverService, options, testSettings.TimeoutTimeSpan);
-
-                    if (testSettings.DeleteAllCookies)
-                    {
-                        driver.Manage().Cookies.DeleteAllCookies();
-                    }
-
-                    driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
-
-                    if (testSettings.MaximiseBrowser)
-                    {
-                        driver.Manage().Window.Maximize();
-                    }
-
-                    var extendedWebDriver = new TestWebDriver(driver, testSettings, TestOutputHelper);
-                    TestWebDriver = extendedWebDriver;
-                    return extendedWebDriver;
-                }
-                case WebDriverType.EdgeDriver:
-                {
-                    testSettings.BrowserName = "Edge " + browserVersion;
-                    var driverService = EdgeDriverService.CreateDefaultService(AssemblyDirectory, "MicrosoftWebDriver.exe");
-                    var options = new EdgeOptions();
-                    var driver = new EdgeDriver(driverService, options, testSettings.TimeoutTimeSpan);
-
-                    if (testSettings.DeleteAllCookies)
-                    {
-                        driver.Manage().Cookies.DeleteAllCookies();
-                    }
-
-                    driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
-
-                    if (testSettings.MaximiseBrowser)
-                    {
-                        driver.Manage().Window.Maximize();
-                    }
-
-                    var extendedWebDriver = new TestWebDriver(driver, testSettings, TestOutputHelper);
-
-                    TestWebDriver = extendedWebDriver;
-                    return extendedWebDriver;
-                }
-            }
-            return null;
         }
 
         /// <summary>
