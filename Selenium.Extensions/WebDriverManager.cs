@@ -171,6 +171,7 @@ namespace Selenium.Extensions
             testSettings.BrowserName = "Chrome " + browserVersion;
 
             var driverService = ChromeDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation), Path.GetFileName(driverLocation));
+
             var options = new ChromeOptions
             {
                 LeaveBrowserRunning = false
