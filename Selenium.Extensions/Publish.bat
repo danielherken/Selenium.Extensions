@@ -1,2 +1,2 @@
 ..\NuGet\nuget.exe pack Selenium.Extensions.MultiBrowser.csproj -Prop Configuration=Release
-..\NuGet\nuget.exe push Selenium.Extensions.MultiBrowser.1.3.4.nupkg 4cf7fb71-b7c7-49ce-8114-61ee58c8aec3 -Source https://www.nuget.org/api/v2/package
+..\NuGet\nuget.exe push Selenium.Extensions.MultiBrowser.1.3.5.nupkg 4cf7fb71-b7c7-49ce-8114-61ee58c8aec3 -Source https://www.nuget.org/api/v2/package
