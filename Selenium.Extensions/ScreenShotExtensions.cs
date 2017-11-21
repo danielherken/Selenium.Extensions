@@ -78,16 +78,6 @@ namespace Selenium.Extensions
                             Thread.Sleep(1000);
                         }
                     }
-                    else if (testSettings.DriverType == WebDriverType.SafariDriver)
-                    {
-                        // Calculate the Scrolling (if needed)
-                        if (previous != Rectangle.Empty)
-                        {
-                            driver.ExecuteScript($"document.body.style.top = \"-{previous.Bottom}px\"");
-
-                            Thread.Sleep(1000);
-                        }
-                    }
                     // Take Screenshot
                     Screenshot screenshot = ((ITakesScreenshot)driver).GetScreenshot();
                     //numb++;
@@ -119,10 +109,6 @@ namespace Selenium.Extensions
             if (testSettings.DriverType == WebDriverType.ChromeDriver)
             {
                 driver.ExecuteScript("window.scrollBy(0, 0)");
-            }
-            if (testSettings.DriverType == WebDriverType.SafariDriver)
-            {
-                driver.ExecuteScript("document.body.style.top = \"0px\"");
             }
             return stitchedImage;
         }

@@ -53,8 +53,7 @@ namespace Selenium.Extensions
         /// <returns></returns>
         /// <exception cref="TestConfigurationException">The details you specified are invalid</exception>
         /// <exception cref="TestConfigurationException">The details you specified are invalid</exception>
-        public static ITestWebDriver InitializeInstalledBrowserDriver(TestSettings testSettings,
-            ITestOutputHelper testOutputHelper)
+        public static ITestWebDriver InitializeInstalledBrowserDriver(TestSettings testSettings, decimal browserVersion, ITestOutputHelper testOutputHelper)
         {
             ScreenShotCounter = 0;
             TestOutputHelper = testOutputHelper;
@@ -62,160 +61,179 @@ namespace Selenium.Extensions
             switch (testSettings.DriverType)
             {
                 case WebDriverType.ChromeDriver:
-                {
-                    string driverLocation = Path.Combine(AssemblyDirectory, "chromedriver.exe");
-                    driverLocation = ValidateDriverPresentOrUnblocked(WebDriverType.ChromeDriver, driverLocation);
-                    testSettings.BrowserName = "Chrome";
-                    var driverService = ChromeDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation),
-                        Path.GetFileName(driverLocation));
-                    var options = new ChromeOptions
                     {
-                        LeaveBrowserRunning = false
-                    };
-                    options.AddArgument("--no-default-browser-check");
-                    options.AddArgument("--test-type=browser");
-                    options.AddArgument("--start-maximized");
-                    options.AddArgument("--allow-no-sandbox-job");
-                    options.AddArgument("--disable-component-update");
-                    options.AddArgument("--auth-server-whitelist=" + testSettings.TestUri.Authority.Replace("www", "*"));
-                    var driver = new ChromeDriver(driverService, options, testSettings.TimeoutTimeSpan);
-                    var firingDriver = AttachDriverEvents(driver);
-                    if (testSettings.DeleteAllCookies)
-                    {
-                        firingDriver.Manage().Cookies.DeleteAllCookies();
+                        return CreateInstalledChromeDriver(testSettings, Convert.ToInt32(browserVersion));
                     }
-                    driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
-                    if (testSettings.MaximiseBrowser)
-                    {
-                        firingDriver.Manage().Window.Maximize();
-                    }
-                    var extendedWebDriver = new TestWebDriver(firingDriver, testSettings, TestOutputHelper);
-                    TestWebDriver = extendedWebDriver;
-                    return extendedWebDriver;
-                }
                 case WebDriverType.FirefoxDriver:
-                {
-                    testSettings.BrowserName = "Firefox";
-                    var driverService = FirefoxDriverService.CreateDefaultService();
-                    var options = new FirefoxOptions();
-                    options.UseLegacyImplementation = false;
-                    var driver = new FirefoxDriver(driverService, options, testSettings.TimeoutTimeSpan);
-                    if (testSettings.DeleteAllCookies)
                     {
-                        driver.Manage().Cookies.DeleteAllCookies();
+                        return CreateInstalledFirefoxDriver(testSettings, Convert.ToInt32(browserVersion));
                     }
-                    driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
-                    if (testSettings.MaximiseBrowser)
-                    {
-                        driver.Manage().Window.Maximize();
-                    }
-                    var extendedWebDriver = new TestWebDriver(driver, testSettings, TestOutputHelper);
-                    TestWebDriver = extendedWebDriver;
-                    return extendedWebDriver;
-                }
                 case WebDriverType.InternetExplorerDriver:
-                {
-                    testSettings.BrowserName = "IE";
-                    var driverName = "IEDriverServer.exe";
-                    if (Environment.Is64BitProcess)
                     {
-                        driverName = "IEDriverServer64.exe";
+                        return CreateInstalledIEDriver(testSettings);
                     }
-                    string driverLocation = Path.Combine(AssemblyDirectory, driverName);
-                    driverLocation = ValidateDriverPresentOrUnblocked(WebDriverType.InternetExplorerDriver,
-                        driverLocation);
-                    var driverService =
-                        InternetExplorerDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation),
-                            Path.GetFileName(driverLocation));
-                    var options = new InternetExplorerOptions
-                    {
-                        IgnoreZoomLevel = true,
-                        IntroduceInstabilityByIgnoringProtectedModeSettings = true,
-                        BrowserAttachTimeout = testSettings.TimeoutTimeSpan,
-                        RequireWindowFocus = true,
-                        ElementScrollBehavior = InternetExplorerElementScrollBehavior.Bottom,
-                        InitialBrowserUrl = testSettings.TestUri.AbsoluteUri,
-                        EnsureCleanSession = true,
-                        EnableNativeEvents = true
-                    };
-                    var driver = new InternetExplorerDriver(driverService, options, testSettings.TimeoutTimeSpan);
-                    if (testSettings.DeleteAllCookies)
-                    {
-                        driver.Manage().Cookies.DeleteAllCookies();
-                    }
-                    driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
-                    if (testSettings.MaximiseBrowser)
-                    {
-                        driver.Manage().Window.Maximize();
-                    }
-                    var extendedWebDriver = new TestWebDriver(driver, testSettings, TestOutputHelper);
-                    TestWebDriver = extendedWebDriver;
-                    return extendedWebDriver;
-                }
                 case WebDriverType.EdgeDriver:
-                {
-                    string driverLocation = Path.Combine(AssemblyDirectory, "MicrosoftWebDriver.exe");
-                    driverLocation = ValidateDriverPresentOrUnblocked(WebDriverType.EdgeDriver, driverLocation);
-                    testSettings.BrowserName = "Edge";
-                    var driverService = EdgeDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation),
-                        Path.GetFileName(driverLocation));
-                        var options = new EdgeOptions();
-                    var driver = new EdgeDriver(driverService, options, testSettings.TimeoutTimeSpan);
-                    if (testSettings.DeleteAllCookies)
                     {
-                        driver.Manage().Cookies.DeleteAllCookies();
+                        return CreateInstalledEdgeDriver(testSettings, Convert.ToInt32(browserVersion));
                     }
-                    driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
-                    if (testSettings.MaximiseBrowser)
-                    {
-                        driver.Manage().Window.Maximize();
-                    }
-                    var extendedWebDriver = new TestWebDriver(driver, testSettings, TestOutputHelper);
-                    TestWebDriver = extendedWebDriver;
-                    return extendedWebDriver;
-                }
-                case WebDriverType.OperaDriver:
-                {
-                    testSettings.BrowserName = "Opera";
-                    var driverService = OperaDriverService.CreateDefaultService();
-                    var options = new OperaOptions
-                    {
-                        LeaveBrowserRunning = false
-                    };
-                    var driver = new OperaDriver(driverService, options, testSettings.TimeoutTimeSpan);
-                    if (testSettings.DeleteAllCookies)
-                    {
-                        driver.Manage().Cookies.DeleteAllCookies();
-                    }
-                    driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
-                    if (testSettings.MaximiseBrowser)
-                    {
-                        driver.Manage().Window.Maximize();
-                    }
-                    var extendedWebDriver = new TestWebDriver(driver, testSettings, TestOutputHelper);
-                    TestWebDriver = extendedWebDriver;
-                    return extendedWebDriver;
-                }
-                case WebDriverType.SafariDriver:
-                {
-                    testSettings.BrowserName = "Safari";
-                    var options = new SafariOptions();
-                    var driver = new SafariDriver(options);
-                    if (testSettings.DeleteAllCookies)
-                    {
-                        driver.Manage().Cookies.DeleteAllCookies();
-                    }
-                    driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
-                    if (testSettings.MaximiseBrowser)
-                    {
-                        driver.Manage().Window.Maximize();
-                    }
-                    var extendedWebDriver = new TestWebDriver(driver, testSettings, TestOutputHelper);
-                    TestWebDriver = extendedWebDriver;
-                    return extendedWebDriver;
-                }
             }
             throw new TestConfigurationException("The details you specified are invalid");
+        }
+
+        private static ITestWebDriver CreateInstalledEdgeDriver(TestSettings testSettings, int browserVersion)
+        {
+            string driverLocation = GetMultiBrowserDriverBasePath();
+            driverLocation = Path.Combine(driverLocation, "EdgeDrivers", browserVersion.ToString(), "MicrosoftWebDriver.exe");
+            driverLocation = ValidateDriverPresentOrUnblocked(WebDriverType.EdgeDriver, driverLocation);
+
+            testSettings.BrowserName = "Edge";
+            var driverService = EdgeDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation), Path.GetFileName(driverLocation));
+
+            var options = new EdgeOptions();
+            var driver = new EdgeDriver(driverService, options, testSettings.TimeoutTimeSpan);
+
+            if (testSettings.DeleteAllCookies)
+            {
+                driver.Manage().Cookies.DeleteAllCookies();
+            }
+
+            driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
+
+            if (testSettings.MaximiseBrowser)
+            {
+                driver.Manage().Window.Maximize();
+            }
+
+            var extendedWebDriver = new TestWebDriver(driver, testSettings, TestOutputHelper);
+            TestWebDriver = extendedWebDriver;
+            return extendedWebDriver;
+        }
+
+        private static ITestWebDriver CreateInstalledIEDriver(TestSettings testSettings)
+        {
+            testSettings.BrowserName = "IE";
+
+            string driverBasePath = GetMultiBrowserDriverBasePath();
+
+            var driverName = "IEDrivers\\x86\\IEDriverServer.exe";
+            if (Environment.Is64BitProcess)
+            {
+                driverName = "IEDrivers\\x64\\IEDriverServer64.exe";
+            }
+
+            string driverLocation = Path.Combine(driverBasePath, driverName);
+            driverLocation = ValidateDriverPresentOrUnblocked(WebDriverType.InternetExplorerDriver, driverLocation);
+            var driverService = InternetExplorerDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation), Path.GetFileName(driverLocation));
+            var options = new InternetExplorerOptions
+            {
+                IgnoreZoomLevel = true,
+                IntroduceInstabilityByIgnoringProtectedModeSettings = true,
+                BrowserAttachTimeout = testSettings.TimeoutTimeSpan,
+                RequireWindowFocus = true,
+                ElementScrollBehavior = InternetExplorerElementScrollBehavior.Bottom,
+                InitialBrowserUrl = testSettings.TestUri.AbsoluteUri,
+                EnsureCleanSession = true,
+                EnableNativeEvents = true
+            };
+
+            var driver = new InternetExplorerDriver(driverService, options, testSettings.TimeoutTimeSpan);
+
+            if (testSettings.DeleteAllCookies)
+            {
+                driver.Manage().Cookies.DeleteAllCookies();
+            }
+
+            driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
+
+            if (testSettings.MaximiseBrowser)
+            {
+                driver.Manage().Window.Maximize();
+            }
+
+            var extendedWebDriver = new TestWebDriver(driver, testSettings, TestOutputHelper);
+            TestWebDriver = extendedWebDriver;
+            return extendedWebDriver;
+        }
+
+        private static string GetMultiBrowserDriverBasePath()
+        {
+            return Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + "\\MultiBrowser\\Drivers\\";
+        }
+
+        private static ITestWebDriver CreateInstalledChromeDriver(TestSettings testSettings, int browserVersion)
+        {
+            string driverLocation = GetMultiBrowserDriverBasePath();
+            driverLocation = Path.Combine(driverLocation, "ChromeDrivers", browserVersion.ToString());
+
+            driverLocation = ValidateDriverPresentOrUnblocked(WebDriverType.ChromeDriver, driverLocation);
+
+            testSettings.BrowserName = "Chrome";
+
+            var driverService = ChromeDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation), Path.GetFileName(driverLocation));
+            var options = new ChromeOptions
+            {
+                LeaveBrowserRunning = false
+            };
+
+            options.AddArgument("--no-default-browser-check");
+            options.AddArgument("--test-type=browser");
+            options.AddArgument("--start-maximized");
+            options.AddArgument("--allow-no-sandbox-job");
+            options.AddArgument("--disable-component-update");
+            options.AddArgument("--auth-server-whitelist=" + testSettings.TestUri.Authority.Replace("www", "*"));
+
+            var driver = new ChromeDriver(driverService, options, testSettings.TimeoutTimeSpan);
+
+            var firingDriver = AttachDriverEvents(driver);
+
+            if (testSettings.DeleteAllCookies)
+            {
+                firingDriver.Manage().Cookies.DeleteAllCookies();
+            }
+
+            driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
+
+            if (testSettings.MaximiseBrowser)
+            {
+                firingDriver.Manage().Window.Maximize();
+            }
+
+            var extendedWebDriver = new TestWebDriver(firingDriver, testSettings, TestOutputHelper);
+            TestWebDriver = extendedWebDriver;
+
+            return extendedWebDriver;
+        }
+
+        private static ITestWebDriver CreateInstalledFirefoxDriver(TestSettings testSettings, int browserVersion)
+        {
+            testSettings.BrowserName = "Firefox";
+
+            string driverLocation = GetMultiBrowserDriverBasePath();
+            driverLocation = Path.Combine(driverLocation, "FirefoxDrivers", browserVersion.ToString());
+
+            var driverService = FirefoxDriverService.CreateDefaultService(driverLocation);
+
+            var options = new FirefoxOptions();
+            options.UseLegacyImplementation = false;
+
+            var driver = new FirefoxDriver(driverService, options, testSettings.TimeoutTimeSpan);
+
+            if (testSettings.DeleteAllCookies)
+            {
+                driver.Manage().Cookies.DeleteAllCookies();
+            }
+
+            driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
+
+            if (testSettings.MaximiseBrowser)
+            {
+                driver.Manage().Window.Maximize();
+            }
+
+            var extendedWebDriver = new TestWebDriver(driver, testSettings, TestOutputHelper);
+            TestWebDriver = extendedWebDriver;
+
+            return extendedWebDriver;
         }
 
         /// <summary>
@@ -225,8 +243,7 @@ namespace Selenium.Extensions
         /// <param name="browserVersion">The browser version.</param>
         /// <param name="testOutputHelper">The test output helper.</param>
         /// <returns></returns>
-        public static ITestWebDriver InitializeStandaloneBrowserDriver(TestSettings testSettings, decimal browserVersion,
-            ITestOutputHelper testOutputHelper)
+        public static ITestWebDriver InitializeStandaloneBrowserDriver(TestSettings testSettings, decimal browserVersion, ITestOutputHelper testOutputHelper)
         {
             ScreenShotCounter = 0;
             TestOutputHelper = testOutputHelper;
@@ -281,58 +298,71 @@ namespace Selenium.Extensions
                             driverLocation = Path.Combine(AssemblyDirectory, "chromedriver.exe");
                             break;
                     }
+
                     ValidateDriverPresentOrUnblocked(WebDriverType.ChromeDriver, driverLocation);
                     testSettings.BrowserName = "Chrome " + browserVersion;
-                    var multiBrowserExe =
-                        Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                        "\\MultiBrowser\\MB_Chrome" + browserVersion + ".exe";
-                    var driverService = ChromeDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation),
-                        Path.GetFileName(driverLocation));
+
+                    var multiBrowserExe = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + "\\MultiBrowser\\MB_Chrome" + browserVersion + ".exe";
+                    var driverService = ChromeDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation), Path.GetFileName(driverLocation));
+
                     var options = new ChromeOptions
                     {
                         LeaveBrowserRunning = false,
                         BinaryLocation = multiBrowserExe
                     };
+
                     options.AddArgument("--no-default-browser-check");
                     options.AddArgument("--test-type=browser");
                     options.AddArgument("--start-maximized");
                     options.AddArgument("--allow-no-sandbox-job");
                     options.AddArgument("--disable-component-update");
                     options.AddArgument("--auth-server-whitelist=" + testSettings.TestUri.Authority.Replace("www", "*"));
+
                     var driver = new ChromeDriver(driverService, options, testSettings.TimeoutTimeSpan);
+
                     if (testSettings.DeleteAllCookies)
                     {
                         driver.Manage().Cookies.DeleteAllCookies();
                     }
+
                     driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
+
                     if (testSettings.MaximiseBrowser)
                     {
                         driver.Manage().Window.Maximize();
                     }
+
                     var extendedWebDriver = new TestWebDriver(driver, testSettings, TestOutputHelper);
                     TestWebDriver = extendedWebDriver;
+
                     return extendedWebDriver;
                 }
                 case WebDriverType.FirefoxDriver:
                 {
                     testSettings.BrowserName = "Firefox " + browserVersion;
-                    var multiBrowserExe =
-                        Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                        "\\MultiBrowser\\MB_Chrome" + browserVersion + ".exe";
+                    var multiBrowserExe = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + "\\MultiBrowser\\MB_Chrome" + browserVersion + ".exe";
+
                     var driverService = FirefoxDriverService.CreateDefaultService();
+
                     driverService.FirefoxBinaryPath = multiBrowserExe;
+
                     var options = new FirefoxOptions();
                     var driver = new FirefoxDriver(driverService, options, testSettings.TimeoutTimeSpan);
+
                     if (testSettings.DeleteAllCookies)
                     {
                         driver.Manage().Cookies.DeleteAllCookies();
                     }
+
                     driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
+
                     if (testSettings.MaximiseBrowser)
                     {
                         driver.Manage().Window.Maximize();
                     }
+
                     var extendedWebDriver = new TestWebDriver(driver, testSettings, TestOutputHelper);
+
                     TestWebDriver = extendedWebDriver;
                     return extendedWebDriver;
                 }
@@ -342,17 +372,15 @@ namespace Selenium.Extensions
                     string driverLocation;
                     if (!Environment.Is64BitProcess)
                     {
-                        driverLocation = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                                         "\\MultiBrowser\\Drivers\\IEDrivers\\x86\\IEDriverServer.exe";
+                        driverLocation = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + "\\MultiBrowser\\Drivers\\IEDrivers\\x86\\IEDriverServer.exe";
                     }
                     else
                     {
-                        driverLocation = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                                         "\\MultiBrowser\\Drivers\\IEDrivers\\x64\\IEDriverServer64.exe";
+                        driverLocation = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + "\\MultiBrowser\\Drivers\\IEDrivers\\x64\\IEDriverServer64.exe";
                     }
-                    var driverService =
-                        InternetExplorerDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation),
-                            Path.GetFileName(driverLocation));
+
+                    var driverService = InternetExplorerDriverService.CreateDefaultService(Path.GetDirectoryName(driverLocation), Path.GetFileName(driverLocation));
+
                     var options = new InternetExplorerOptions
                     {
                         IgnoreZoomLevel = true,
@@ -364,16 +392,21 @@ namespace Selenium.Extensions
                         EnsureCleanSession = true,
                         EnableNativeEvents = true
                     };
+
                     var driver = new InternetExplorerDriver(driverService, options, testSettings.TimeoutTimeSpan);
+
                     if (testSettings.DeleteAllCookies)
                     {
                         driver.Manage().Cookies.DeleteAllCookies();
                     }
+
                     driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
+
                     if (testSettings.MaximiseBrowser)
                     {
                         driver.Manage().Window.Maximize();
                     }
+
                     var extendedWebDriver = new TestWebDriver(driver, testSettings, TestOutputHelper);
                     TestWebDriver = extendedWebDriver;
                     return extendedWebDriver;
@@ -381,46 +414,24 @@ namespace Selenium.Extensions
                 case WebDriverType.EdgeDriver:
                 {
                     testSettings.BrowserName = "Edge " + browserVersion;
-                    var driverService = EdgeDriverService.CreateDefaultService(AssemblyDirectory,
-                        "MicrosoftWebDriver.exe");
-                        var options = new EdgeOptions();
+                    var driverService = EdgeDriverService.CreateDefaultService(AssemblyDirectory, "MicrosoftWebDriver.exe");
+                    var options = new EdgeOptions();
                     var driver = new EdgeDriver(driverService, options, testSettings.TimeoutTimeSpan);
+
                     if (testSettings.DeleteAllCookies)
                     {
                         driver.Manage().Cookies.DeleteAllCookies();
                     }
+
                     driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
+
                     if (testSettings.MaximiseBrowser)
                     {
                         driver.Manage().Window.Maximize();
                     }
+
                     var extendedWebDriver = new TestWebDriver(driver, testSettings, TestOutputHelper);
-                    TestWebDriver = extendedWebDriver;
-                    return extendedWebDriver;
-                }
-                case WebDriverType.OperaDriver:
-                {
-                    testSettings.BrowserName = "Opera " + browserVersion;
-                    var multiBrowserExe =
-                        Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) +
-                        "\\MultiBrowser\\MB_Chrome" + browserVersion + ".exe";
-                    var driverService = OperaDriverService.CreateDefaultService();
-                    var options = new OperaOptions
-                    {
-                        LeaveBrowserRunning = false,
-                        BinaryLocation = multiBrowserExe
-                    };
-                    var driver = new OperaDriver(driverService, options, testSettings.TimeoutTimeSpan);
-                    if (testSettings.DeleteAllCookies)
-                    {
-                        driver.Manage().Cookies.DeleteAllCookies();
-                    }
-                    driver.Manage().Timeouts().ImplicitWait = testSettings.TimeoutTimeSpan;
-                    if (testSettings.MaximiseBrowser)
-                    {
-                        driver.Manage().Window.Maximize();
-                    }
-                    var extendedWebDriver = new TestWebDriver(driver, testSettings, TestOutputHelper);
+
                     TestWebDriver = extendedWebDriver;
                     return extendedWebDriver;
                 }

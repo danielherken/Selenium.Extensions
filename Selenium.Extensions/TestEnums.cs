@@ -25,10 +25,7 @@ namespace Selenium.Extensions
         [Description("Firefox")] FirefoxDriver,
         [Description("IE")] InternetExplorerDriver,
         [Description("Edge")] EdgeDriver,
-        [Description("Opera")] OperaDriver,
-        //PhantomJsDriver,
         [Description("Remote")] RemoteWebDriver,
-        [Description("Safari")] SafariDriver,
         [Description("Emulator")]EmulatorDriver,
     }
 

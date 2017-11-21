@@ -92,16 +92,9 @@ namespace Selenium.Extensions
         {
             LogMessage(LogLevel.Verbose, "Taking a full page screenshot");
             Bitmap screenshot;
-            if (Settings.DriverType == WebDriverType.ChromeDriver || Settings.DriverType == WebDriverType.SafariDriver)
+            using (var memStream = new MemoryStream(((ITakesScreenshot)_driver).GetScreenshot().AsByteArray))
             {
-                screenshot = ScreenShotExtensions.GetFullScreenShot(this, Settings);
-            }
-            else
-            {
-                using (var memStream = new MemoryStream(((ITakesScreenshot)_driver).GetScreenshot().AsByteArray))
-                {
-                    screenshot = new Bitmap(Image.FromStream(memStream));
-                }
+                screenshot = new Bitmap(Image.FromStream(memStream));
             }
             screenshot?.Save(Settings.TestDirectory + "ScreenShots" + "\\" + Settings.BrowserName + "_" + WebDriverManager.ScreenShotCounter++ + ".png", ImageFormat.Png);
         }
