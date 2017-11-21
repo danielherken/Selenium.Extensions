@@ -1,7 +1,9 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
-Project("{FAC9832C-8B16-4520-8DDB-001746CC230F}") = "Selenium.Extensions", "Selenium.Extensions\Selenium.Extensions.csproj", "{8470CFE2-FF74-4C2E-916B-550F23181C94}"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2009
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Selenium.Extensions.MultiBrowser", "Selenium.Extensions\Selenium.Extensions.MultiBrowser.csproj", "{8470CFE2-FF74-4C2E-916B-550F23181C94}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -16,5 +18,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6A4782D2-80D8-44F8-832F-55990E47EFA2}
 	EndGlobalSection
 EndGlobal

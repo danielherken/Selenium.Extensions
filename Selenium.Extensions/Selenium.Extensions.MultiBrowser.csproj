@@ -10,7 +10,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Selenium.Extensions</RootNamespace>
-    <AssemblyName>Selenium.Extensions</AssemblyName>
+    <AssemblyName>Selenium.Extensions.MultiBrowser</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />

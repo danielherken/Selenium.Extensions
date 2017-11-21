@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 
-[assembly: AssemblyTitle("Selenium.Extensions")]
+[assembly: AssemblyTitle("Selenium.Extensions.MultiBrowser")]
 [assembly: AssemblyDescription("Extension methods for running MultiBrowser Selenium WebDriver tests")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Position Fixed UG")]
